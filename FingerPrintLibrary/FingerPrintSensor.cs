@@ -63,8 +63,53 @@ namespace FingerPrintLibrary
             Port.Write(write, offset, write.Length - offset);
         }
 
+        public bool HandShake()
+        {
+            var send = new List<byte>();
 
+            throw new NotImplementedException();
+        }
 
+        public bool ReceiveSuccess(byte[] received)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Returns a byte array of data with a 2 byte checksum appended.
+        /// </summary>
+        /// <param name="data">
+        /// byte list that needs a checksum
+        /// </param>
+        /// <returns>
+        /// byte array of "data" with 2 byte checksum appended.
+        /// </returns>
+        public byte[] AddCheckSum(List<byte> data)
+        {
+            var fullSum = BitConverter.GetBytes(data.Sum(p => (int)p));
+
+            var checkSum = new byte[2];
+
+            if (fullSum.Length >= 2)
+            {
+                checkSum[0] = fullSum[0];
+                checkSum[1] = fullSum[1];
+            }
+            else if (fullSum.Length == 1)
+            {
+                checkSum[0] = fullSum[0];
+                checkSum[1] = 0x0;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("data", "data byte list must return a sum >= 0");
+            }
+
+            data.AddRange(checkSum);
+
+            return data.ToArray();
+        }
+                
         #region Destructor
         ~FingerPrintSensor()
         {
