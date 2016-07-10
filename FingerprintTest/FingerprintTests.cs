@@ -13,15 +13,54 @@ namespace FingerprintTest
         public void TestGetCheckSum()
         {
             //Arrange
-            var bytes = new List<byte> { 0x1, 0xe };
+            var sensor = new FingerPrintSensor("COM1");
+            var bytes = sensor.GenerateDataPackageStart(0x01);
 
             //Act
-            var sensor = new FingerPrintSensor("COM1");
             var sum = sensor.AddCheckSum(bytes);
+            var expectedSum = new byte[9] { 0xEF, 0x1, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x01 };
 
-            //Assert
-            //var expectedSum = new List<byte> { 0x1, 0xe, 0x0, 0xf };
-            Assert.AreSame(new byte[] { 0x1, 0xe, 0x0, 0xf }, sum);
+            //Assert            
+            Assert.AreEqual(expectedSum.Length, sum.Length);
+            for (int i = 0; i < sum.Length; i++)
+            {
+                Assert.AreEqual(expectedSum[i], sum[i]);
+            }
+
+            sensor.Disposeserial();
+        }
+
+        [TestMethod]
+        public void TestHeaderGeneration()
+        {
+            var sensor = new FingerPrintSensor("COM1");
+            var header = sensor.GenerateDataPackageStart(0x01);
+
+            var expected = new byte[7] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
+
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.AreEqual(expected[i], header[i]);
+            }
+
+            sensor.Disposeserial();
+        }
+
+        [TestMethod]
+        public void TestHandshakeGeneration()
+        {
+            var sensor = new FingerPrintSensor("COM1");
+
+            var command = sensor.GenerateHandshakeInstruction();
+
+            var expectedCommand = new byte[13] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x04, 0x17, 0x00, 0x00, 0x1C };
+
+            for (int i = 0; i < expectedCommand.Length; i++)
+            {
+                Assert.AreEqual(expectedCommand[i], command[i]);
+            }
+
+            sensor.Disposeserial();
         }
     }
 }

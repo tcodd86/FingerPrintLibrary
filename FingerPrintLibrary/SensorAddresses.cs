@@ -26,17 +26,16 @@ namespace FingerPrintLibrary
         public static byte FINGERPRINT_DBCLEARFAIL = 0x11;
         public static byte FINGERPRINT_PASSFAIL = 0x13;
         public static byte FINGERPRINT_INVALIDIMAGE = 0x15;
+        public static byte INS_HANDSHAKE = 0x17;
         public static byte FINGERPRINT_FLASHERR = 0x18;
         public static byte FINGERPRINT_INVALIDREG = 0x1A;
         public static byte FINGERPRINT_ADDRCODE = 0x20;
         public static byte FINGERPRINT_PASSVERIFY = 0x21;
 
-        public static int FINGERPRINT_STARTCODE = 0xEF01;
-
-        public static byte FINGERPRINT_COMMANDPACKET = 0x1;
-        public static byte FINGERPRINT_DATAPACKET = 0x2;
-        public static byte FINGERPRINT_ACKPACKET = 0x7;
-        public static byte FINGERPRINT_ENDDATAPACKET = 0x8;
+        public static byte PID_COMMANDPACKET = 0x1;
+        public static byte PID_DATAPACKET = 0x2;
+        public static byte PID_ACKPACKET = 0x7;
+        public static byte PID_ENDDATAPACKET = 0x8;
 
         public static byte FINGERPRINT_TIMEOUT = 0xFF;
         public static byte FINGERPRINT_BADPACKET = 0xFE;
@@ -52,5 +51,23 @@ namespace FingerPrintLibrary
         public static byte FINGERPRINT_VERIFYPASSWORD = 0x13;
         public static byte FINGERPRINT_HISPEEDSEARCH = 0x1B;
         public static byte FINGERPRINT_TEMPLATECOUNT = 0x1D;
+
+        public static int HEADER = 0xEF01;
+        public static byte[] HEADER_BYTEARRAY
+        {
+            get
+            {
+                return new byte[2] { 0x01, 0xEF };
+            }
+        }
+
+        public static uint CHIP_ADDRESS = 0xFFFFFFFF;
+        public static byte[] CHIP_ADDRESS_BYTEARRAY
+        {
+            get
+            {
+                return BitConverter.GetBytes(CHIP_ADDRESS);
+            }
+        }
     }
 }

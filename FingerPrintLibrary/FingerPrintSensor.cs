@@ -70,6 +70,17 @@ namespace FingerPrintLibrary
             throw new NotImplementedException();
         }
 
+        public byte[] GenerateHandshakeInstruction()
+        {
+            var handshake = GenerateDataPackageStart(SensorAddresses.PID_COMMANDPACKET);
+
+            var length = new byte[2] { 0x04, 0x00 };
+            handshake.AddRange(length.Reverse());
+            handshake.Add(SensorAddresses.INS_HANDSHAKE);
+            handshake.Add(0x0);
+            return AddCheckSum(handshake);
+        }
+
         public bool ReceiveSuccess(byte[] received)
         {
             throw new NotImplementedException();
@@ -86,7 +97,14 @@ namespace FingerPrintLibrary
         /// </returns>
         public byte[] AddCheckSum(List<byte> data)
         {
-            var fullSum = BitConverter.GetBytes(data.Sum(p => (int)p));
+            //get sum of everything but the header and chip address
+            var fullSum = BitConverter.GetBytes(data.Skip(6).Sum(p => (int)p));
+
+            //transposition to checkSum relies on it being little endian format
+            if (!BitConverter.IsLittleEndian)
+            {
+                fullSum = fullSum.Reverse().ToArray();
+            }
 
             var checkSum = new byte[2];
 
@@ -98,24 +116,53 @@ namespace FingerPrintLibrary
             else if (fullSum.Length == 1)
             {
                 checkSum[0] = fullSum[0];
-                checkSum[1] = 0x0;
+                checkSum[1] = 0x00;                
             }
             else
             {
                 throw new ArgumentOutOfRangeException("data", "data byte list must return a sum >= 0");
             }
 
+            if (BitConverter.IsLittleEndian)
+            {
+                checkSum = checkSum.Reverse().ToArray();
+            }
             data.AddRange(checkSum);
 
             return data.ToArray();
         }
-                
+
+        /// <summary>
+        /// Generates the start of the datapackage to send including header, adddress, and package identifier.
+        /// </summary>
+        /// <param name="packageIdentifier">
+        /// The package identifier.
+        /// </param>
+        /// <returns>
+        /// List of bytes with Header, Address, and Package Identifier at the start.
+        /// </returns>
+        public List<byte> GenerateDataPackageStart(byte packageIdentifier)
+        {
+            var dataPackage = new List<byte>();
+
+            dataPackage.AddRange(SensorAddresses.HEADER_BYTEARRAY.Reverse());
+            dataPackage.AddRange(SensorAddresses.CHIP_ADDRESS_BYTEARRAY.Reverse());
+            dataPackage.Add(packageIdentifier);
+
+            return dataPackage;
+        }
+            
         #region Destructor
         ~FingerPrintSensor()
         {
+            Disposeserial();
+        }
+
+        public void Disposeserial()
+        {
             if (Port.IsOpen)
             {
-                Port.Close();                
+                Port.Close();
             }
             Port.Dispose();
         }
