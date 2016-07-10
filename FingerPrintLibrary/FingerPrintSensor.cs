@@ -33,8 +33,10 @@ namespace FingerPrintLibrary
             
             try
             {
-                Port = new SerialPort(address, baudRate);
+                Port = new SerialPort(address, baudRate, Parity.None, 8);
                 Port.Open();
+
+                Port.DataReceived += new SerialDataReceivedEventHandler(Sensor_DataReceived);
             }
             catch (Exception ex)
             {
@@ -79,6 +81,11 @@ namespace FingerPrintLibrary
             handshake.Add(SensorAddresses.INS_HANDSHAKE);
             handshake.Add(0x0);
             return AddCheckSum(handshake);
+        }
+
+        private void Sensor_DataReceived(object sender, SerialDataReceivedEventArgs args)
+        {
+            throw new NotImplementedException();
         }
 
         public bool ReceiveSuccess(byte[] received)
@@ -151,13 +158,10 @@ namespace FingerPrintLibrary
 
             return dataPackage;
         }
-            
-        #region Destructor
-        ~FingerPrintSensor()
-        {
-            Disposeserial();
-        }
 
+        /// <summary>
+        /// Closes the serial port if open and disposes it.
+        /// </summary>
         public void Disposeserial()
         {
             if (Port.IsOpen)
@@ -166,6 +170,10 @@ namespace FingerPrintLibrary
             }
             Port.Dispose();
         }
-        #endregion
+        
+        ~FingerPrintSensor()
+        {
+            Disposeserial();
+        }
     }
 }
