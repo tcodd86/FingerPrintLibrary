@@ -62,5 +62,19 @@ namespace FingerprintTest
 
             sensor.Disposeserial();
         }
+
+        [TestMethod]
+        public void TestParseReturn()
+        {
+            var sensor = new FingerPrintSensor("COM1");
+
+            var commandToParse = new byte[13] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x04, 0x17, 0x00, 0x00, 0x1C };
+
+            var expectedByte = 0x01;
+
+            Assert.AreEqual(expectedByte, sensor.ParseReturn(commandToParse));
+
+            sensor.Disposeserial();
+        }
     }
 }

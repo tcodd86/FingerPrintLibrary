@@ -37,6 +37,8 @@ namespace FingerPrintLibrary
                 Port.Open();
 
                 Port.DataReceived += new SerialDataReceivedEventHandler(Sensor_DataReceived);
+                //Minimum size of acknowledge packet is 12 bytes. Only trigger when 12 bytes have been received
+                Port.ReceivedBytesThreshold = 12;
             }
             catch (Exception ex)
             {
@@ -74,25 +76,56 @@ namespace FingerPrintLibrary
 
         public byte[] GenerateHandshakeInstruction()
         {
-            var handshake = GenerateDataPackageStart(SensorAddresses.PID_COMMANDPACKET);
+            var handshake = GenerateDataPackageStart(SensorCodes.PID_COMMANDPACKET);
 
             var length = new byte[2] { 0x04, 0x00 };
             handshake.AddRange(length.Reverse());
-            handshake.Add(SensorAddresses.INS_HANDSHAKE);
+            handshake.Add(SensorCodes.HANDSHAKE);
             handshake.Add(0x0);
             return AddCheckSum(handshake);
         }
 
         private void Sensor_DataReceived(object sender, SerialDataReceivedEventArgs args)
         {
-            throw new NotImplementedException();
+            var buffer = new byte[12];
+            Port.Read(buffer, 0, 12);
+
+            if (ParseSuccess(buffer))
+            {
+                var packageID = ParseReturn(buffer);
+                //test for cases that will have data packet after, read those.
+
+                //all other cases, take appropriate action immediately.
+            }
         }
 
-        public bool ReceiveSuccess(byte[] received)
+        public bool ParseSuccess(byte[] buffer)
         {
-            throw new NotImplementedException();
+            if (buffer.Length < 10)
+            {
+                throw new IndexOutOfRangeException("buffer must have a length of 12 or greater.");
+            }
+
+            if (buffer[9] > 0x00)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
+        public byte ParseReturn(byte[] buffer)
+        {
+            if (buffer.Length < 7)
+            {
+                throw new IndexOutOfRangeException("buffer must have a length of 12 or greater.");
+            }
+
+            return buffer[6];
+        }
+        
         /// <summary>
         /// Returns a byte array of data with a 2 byte checksum appended.
         /// </summary>
@@ -152,8 +185,8 @@ namespace FingerPrintLibrary
         {
             var dataPackage = new List<byte>();
 
-            dataPackage.AddRange(SensorAddresses.HEADER_BYTEARRAY.Reverse());
-            dataPackage.AddRange(SensorAddresses.CHIP_ADDRESS_BYTEARRAY.Reverse());
+            dataPackage.AddRange(SensorCodes.HEADER_BYTEARRAY.Reverse());
+            dataPackage.AddRange(SensorCodes.CHIP_ADDRESS_BYTEARRAY.Reverse());
             dataPackage.Add(packageIdentifier);
 
             return dataPackage;
