@@ -50,18 +50,29 @@ namespace FingerPrintLibrary
         public static byte BADPACKET = 0xFE;
         #endregion
 
-        #region 
+        #region Instruction Codes
         public static byte GETIMAGE = 0x01;
         public static byte IMAGE2TZ = 0x02;
+        public static byte MATCH = 0x03;
+        public static byte SEARCH = 0x04;
         public static byte REGMODEL = 0x05;
         public static byte STORE = 0x06;
         public static byte LOAD = 0x07;
-        public static byte UPLOAD = 0x08;
+        public static byte UPLOAD_TEMPLATE = 0x08;
+        public static byte DOWN_TEMPLATE = 0x09;
+        public static byte UP_IMAGE = 0x0A;
+        public static byte DOWN_IMAGE = 0x0B;
         public static byte DELETE = 0x0C;
         public static byte EMPTY = 0x0D;
-        public static byte VERIFYPASSWORD = 0x13;
+        public static byte SET_SYS = 0x0E;
+        public static byte READ_SYS = 0x0F;
+        //public static byte VERIFYPASSWORD = 0x13;
+        public static byte GET_RANDOM_CODE = 0x014;
+        public static byte SET_ADDRESS = 0x15;
         public static byte HANDSHAKE = 0x17;
-        public static byte HISPEEDSEARCH = 0x1B;
+        public static byte WRITE_NOTEPAD = 0x18;
+        public static byte READ_NOTEPAD = 0x19;
+        //public static byte HISPEEDSEARCH = 0x1B;
         public static byte TEMPLATECOUNT = 0x1D;
         #endregion
 
