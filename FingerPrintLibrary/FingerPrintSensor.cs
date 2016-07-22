@@ -15,6 +15,10 @@ namespace FingerPrintLibrary
 
         private SerialPort Port { get; set; }
 
+        private bool Success { get; set; }
+
+        private TaskCompletionSource<byte[]> TCS = new TaskCompletionSource<byte[]>();
+
         #region Constructors
         /// <summary>
         /// Initializes new fingerprint sensor.
@@ -30,7 +34,9 @@ namespace FingerPrintLibrary
 
             BaudRate = baudRate;
             Address = address;
-            
+
+            SomeEvent += ReadFinished;
+
             try
             {
                 Port = new SerialPort(address, baudRate, Parity.None, 8);
@@ -42,7 +48,7 @@ namespace FingerPrintLibrary
             }
             catch (Exception ex)
             {
-                var error = new Exception("Error while initializing serial port.", ex);                
+                var error = new Exception("Error while initializing serial port.", ex);
                 throw error;
             }
         }
@@ -69,9 +75,16 @@ namespace FingerPrintLibrary
 
         public bool HandShake()
         {
-            var send = new List<byte>();
+            var send = GenerateHandshakeInstruction();
 
-            throw new NotImplementedException();
+            var result = SendAndReadSerial(send).Result;
+
+            //parse result, return bool
+            var success = ParseSuccess(result);
+            //test code only
+            //Port.Write(send, 0, send.Length);
+
+            return success;
         }
 
         public byte[] GenerateHandshakeInstruction()
@@ -87,16 +100,56 @@ namespace FingerPrintLibrary
 
         private void Sensor_DataReceived(object sender, SerialDataReceivedEventArgs args)
         {
-            var buffer = new byte[12];
-            Port.Read(buffer, 0, 12);
+            //max buffer length is 256. Padd a little.
+            int bufferSize = 300;
+            var buffer = new byte[bufferSize];
 
-            if (ParseSuccess(buffer))
+            //maybe hardcode delay in here to make sure all bytes have been received
+            Port.Read(buffer, 0, Port.BytesToRead);
+
+            //Raise OnBufferFinished event
+            OnReadBufferFinished(new ReadFinishedEventArgs(buffer));
+        }
+
+        private event EventHandler<ReadFinishedEventArgs> SomeEvent;
+
+        private void OnReadBufferFinished(ReadFinishedEventArgs e)
+        {
+            SomeEvent?.Invoke(this, e);
+        }
+
+        private class ReadFinishedEventArgs
+        {
+            public byte[] ReadBuffer { get; set; }
+
+            public ReadFinishedEventArgs(byte[] readBuffer)
             {
-                var packageID = ParseReturn(buffer);
-                //test for cases that will have data packet after, read those.
-
-                //all other cases, take appropriate action immediately.
+                ReadBuffer = readBuffer;
             }
+        }
+        
+        private void ReadFinished(object sender, ReadFinishedEventArgs e)
+        {
+            TCS.SetResult(e.ReadBuffer);
+        }
+
+        private async Task<byte[]> SendAndReadSerial(byte[] sendData)
+        {
+            //start fresh
+            TCS = new TaskCompletionSource<byte[]>();
+
+            //send data to FingerPrint sensor
+            WriteByteArray(sendData);
+
+            await TCS.Task;
+
+            return TCS.Task.Result;
+        }
+        
+
+        public int ParseLength(byte[] buffer)
+        {
+            throw new NotImplementedException();
         }
 
         public bool ParseSuccess(byte[] buffer)
