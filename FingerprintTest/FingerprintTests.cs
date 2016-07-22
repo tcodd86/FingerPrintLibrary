@@ -13,11 +13,10 @@ namespace FingerprintTest
         public void TestGetCheckSum()
         {
             //Arrange
-            var sensor = new FingerPrintSensor("COM1");
-            var bytes = sensor.GenerateDataPackageStart(0x01);
+            var bytes = DataPackageUtilities.GenerateDataPackageStart(0x01);
 
             //Act
-            var sum = sensor.AddCheckSum(bytes);
+            var sum = DataPackageUtilities.AddCheckSum(bytes);
             var expectedSum = new byte[9] { 0xEF, 0x1, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x01 };
 
             //Assert            
@@ -26,15 +25,12 @@ namespace FingerprintTest
             {
                 Assert.AreEqual(expectedSum[i], sum[i]);
             }
-
-            sensor.Disposeserial();
         }
 
         [TestMethod]
         public void TestHeaderGeneration()
         {
-            var sensor = new FingerPrintSensor("COM1");
-            var header = sensor.GenerateDataPackageStart(0x01);
+            var header = DataPackageUtilities.GenerateDataPackageStart(0x01);
 
             var expected = new byte[7] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
 
@@ -42,16 +38,12 @@ namespace FingerprintTest
             {
                 Assert.AreEqual(expected[i], header[i]);
             }
-
-            sensor.Disposeserial();
         }
 
         [TestMethod]
         public void TestHandshakeGeneration()
         {
-            var sensor = new FingerPrintSensor("COM1");
-
-            var command = sensor.GenerateHandshakeInstruction();
+            var command = DataPackageUtilities.GenerateHandshakeDataPackage();
 
             var expectedCommand = new byte[13] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x04, 0x17, 0x00, 0x00, 0x1C };
 
@@ -59,8 +51,6 @@ namespace FingerprintTest
             {
                 Assert.AreEqual(expectedCommand[i], command[i]);
             }
-
-            sensor.Disposeserial();
         }
 
         [TestMethod]
@@ -72,7 +62,7 @@ namespace FingerprintTest
 
             var expectedByte = 0x01;
 
-            Assert.AreEqual(expectedByte, sensor.ParseReturn(commandToParse));
+            Assert.AreEqual(expectedByte, DataPackageUtilities.ParsePackageIdentifier(commandToParse));
 
             sensor.Disposeserial();
         }
