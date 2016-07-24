@@ -27,5 +27,15 @@ namespace FingerPrintTestProject
 
             Console.ReadLine();
         }
+
+        public bool EnrollFingerPrint(int position = -1)
+        {
+            //1. Read fingerprint and store in ImageBuffer
+            //2. Convert into Char file (Img2Tz) and store in Char Buffer 1
+            //3. Read fingerprint again and store in ImageBuffer
+            //4. Convert into Char file and store in Char Buffer 2
+            //5. Create template from Char buffer 1 & 2 which is stored in both Char buffers
+            //6. Store template in next available template position (if position = -1) or specified location
+        }
     }
 }

@@ -96,7 +96,7 @@ namespace FingerPrintLibrary
         }
         #endregion
 
-        #region Confimration Codes Definitions
+        #region Confirmation Codes Definitions
         public static Dictionary<byte, string> ConfirmationCodes = new Dictionary<byte, string>()
         {
             {0x00, "Command execution complete." }
