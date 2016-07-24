@@ -12,8 +12,6 @@ namespace FingerPrintLibrary
     {
         public SerialWrapper Wrapper;
 
-        public string FailureReason;
-
         #region Constructors
         /// <summary>
         /// Initializes new fingerprint sensor.
@@ -37,15 +35,10 @@ namespace FingerPrintLibrary
         { }
         #endregion
         
-        public bool HandShake()
+        public bool HandShake(out byte confirmationCode)
         {
             var send = DataPackageUtilities.GenerateHandshakeDataPackage();
-
-            var result = Wrapper.SendAndReadSerial(send).Result;
-            
-            var success = DataPackageUtilities.ParseSuccess(result);
-
-            return success;
+            return SendPackageParseResults(send, out confirmationCode);
         }
         
         /// <summary>
@@ -57,23 +50,52 @@ namespace FingerPrintLibrary
         /// <returns>
         /// True if fingerprint is successfully read.
         /// </returns>
-        public bool ReadFingerprint(int maxAttempts = 10)
+        public bool ReadFingerprint(out byte confirmationCode, int maxAttempts = 10)
         {
             var send = DataPackageUtilities.GenerateGenImageDataPackage();
             var success = false;
-
+            confirmationCode = 0x01;
+            byte[] result = new byte[12];
             int attempts = 0;
             while (!success && attempts < maxAttempts)
             {
-                var result = Wrapper.SendAndReadSerial(send).Result;
-                success = DataPackageUtilities.ParseSuccess(result);
+                //wait 1/10 of a second between attempts
+                Thread.Sleep(100);
+
+                success = SendPackageParseResults(send, out confirmationCode);
                 attempts++;
             }
-
-            //set FailurReason here based on response
+                     
             return success;
         }
-        
+
+        public bool GenerateCharacterFileFromImage(out byte confirmationCode, byte buffer = 0x01)
+        {
+            var send = DataPackageUtilities.GenerateCharFileFromImgDataPackage(buffer);
+            return SendPackageParseResults(send, out confirmationCode);
+        }
+
+        public bool GenerateTemplate(out byte confirmationCode)
+        {
+            var send = DataPackageUtilities.GenerateTemplateDataPackage();
+            return SendPackageParseResults(send, out confirmationCode);
+        }
+
+        /// <summary>
+        /// Transmits send and parses results.
+        /// </summary>
+        /// <param name="send">Byte array to send to sensor.</param>
+        /// <param name="confirmationCode">byte that will contain confirmation code.</param>
+        /// <returns>
+        /// True if fingerprint sensor returns success. False if failed.
+        /// </returns>
+        private bool SendPackageParseResults(byte[] send, out byte confirmationCode)
+        {
+            var result = Wrapper.SendAndReadSerial(send).Result;
+            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
+            return DataPackageUtilities.ParseSuccess(result);
+        }
+
         /// <summary>
         /// Closes the serial port if open and disposes it.
         /// </summary>

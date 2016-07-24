@@ -83,7 +83,7 @@ namespace FingerPrintLibrary
         
         private void Sensor_DataReceived(object sender, SerialDataReceivedEventArgs args)
         {
-            //max buffer length is 256. Padd a little.
+            //max buffer length is 256. Pad a little.
             int bufferSize = 300;
             var buffer = new byte[bufferSize];
 

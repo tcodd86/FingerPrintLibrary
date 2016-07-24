@@ -27,6 +27,38 @@ namespace FingerPrintLibrary
             genImg.Add(SensorCodes.GETIMAGE);
             return AddCheckSum(genImg);
         }
+
+        public static byte[] GenerateCharFileFromImgDataPackage(byte buffer)
+        {
+            var genChar = GenerateDataPackageStart();
+            genChar.AddRange(new byte[] { 0x00, 0x04 });
+            genChar.Add(SensorCodes.IMAGE2TZ);
+            genChar.Add(buffer);
+            return AddCheckSum(genChar);
+        }
+
+        public static byte[] GenerateTemplateDataPackage()
+        {
+            var genTemplate = GenerateDataPackageStart();
+            genTemplate.AddRange(new byte[] { 0x00, 0x03 });
+            genTemplate.Add(SensorCodes.REGMODEL);
+            return AddCheckSum(genTemplate);
+        }
+
+        public static byte[] StoreTemplate(byte bufferNumber, Int16 locationNumber)
+        {
+            var storeTemplate = GenerateDataPackageStart();
+            storeTemplate.AddRange(new byte[] { 0x00, 0x06 });
+            storeTemplate.Add(SensorCodes.STORE);
+            storeTemplate.Add(bufferNumber);
+            var loc = BitConverter.GetBytes(locationNumber);
+            if (!BitConverter.IsLittleEndian)
+            {
+                loc = loc.Reverse().ToArray();
+            }
+            storeTemplate.AddRange(loc);
+            return AddCheckSum(storeTemplate);            
+        }
         #endregion
                 
         /// <summary>
@@ -79,12 +111,12 @@ namespace FingerPrintLibrary
         /// Generates the start of the datapackage to send including header, adddress, and package identifier.
         /// </summary>
         /// <param name="packageIdentifier">
-        /// The package identifier.
+        /// The package identifier. Default is command package.
         /// </param>
         /// <returns>
         /// List of bytes with Header, Address, and Package Identifier at the start.
         /// </returns>
-        public static List<byte> GenerateDataPackageStart(byte packageIdentifier)
+        public static List<byte> GenerateDataPackageStart(byte packageIdentifier = 0x01)
         {
             var dataPackage = new List<byte>();
 
@@ -121,6 +153,13 @@ namespace FingerPrintLibrary
             {
                 return true;
             }
+        }
+
+        public static byte ParsePackageConfirmationCode(byte[] buffer)
+        {
+            //Tenth byte is confirmation code
+            ValidateMinimumLength(buffer);
+            return buffer[9];
         }
 
         public static byte ParsePackageIdentifier(byte[] buffer)
