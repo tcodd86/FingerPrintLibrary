@@ -95,5 +95,34 @@ namespace FingerPrintLibrary
             }
         }
         #endregion
+
+        #region Confimration Codes Definitions
+        public static Dictionary<byte, string> ConfirmationCodes = new Dictionary<byte, string>()
+        {
+            {0x00, "Command execution complete." }
+            , {0x01, "Error when receiving data package." }
+            , {0x02, "No finger on the sensor." }
+            , {0x03, "Failed to enroll finger." }
+            , {0x06, "Failed to generate character file due to the over-disorderly fingerprint image." }
+            , {0x07, "Failed to generate character file due to lackness of character point or over-smallness of fingerprint image." }
+            , {0x08, "Finger doesn't match" }
+            , {0x09, "Fail to find the matching finger." }
+            , {0x0A, "Failed to combine the character files." }
+            , {0x0B, "Addressing PageID is beyond the finger library." }
+            , {0x0C, "Error when reading template from library or the template is invalid." }
+            , {0x0D, "Error when uploading template." }
+            , {0x0E, "Module can't receive the following data packages." }
+            , {0x0F, "Error when uploading image." }
+            , {0x10, "Failed to delete the template." }
+            , {0x11, "Failed to clear the finger library." }
+            , {0x15, "Failed to generate the image for the lackness of primary image." }
+            , {0x18, "Error when writing flash." }
+            , {0x19, "No definition error." }
+            , {0x1A, "Invalid register number." }
+            , {0x1B, "Incorrect configuration of register." }
+            , {0x1C, "Wrong notepad page number." }
+            , {0x1D, "Failed to operate the communication port." }
+        };
+        #endregion
     }
 }
