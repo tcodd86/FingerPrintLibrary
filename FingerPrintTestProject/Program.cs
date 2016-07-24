@@ -21,7 +21,8 @@ namespace FingerPrintTestProject
 
             var sensor = new FingerPrintSensor(comPort);
 
-            var success = sensor.HandShake();
+            byte handshakeConfirmationCode;
+            var success = sensor.HandShake(out handshakeConfirmationCode);
 
             Console.WriteLine(success ? "Successfully connected to the fingerprint sensor." : "Failed to connect");
 
@@ -30,6 +31,7 @@ namespace FingerPrintTestProject
 
         public bool EnrollFingerPrint(int position = -1)
         {
+            throw new NotImplementedException();
             //1. Read fingerprint and store in ImageBuffer
             //2. Convert into Char file (Img2Tz) and store in Char Buffer 1
             //3. Read fingerprint again and store in ImageBuffer

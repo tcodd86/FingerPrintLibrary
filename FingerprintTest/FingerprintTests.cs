@@ -13,58 +13,75 @@ namespace FingerprintTest
         public void TestGetCheckSum()
         {
             //Arrange
-            var bytes = DataPackageUtilities.GenerateDataPackageStart(0x01);
+            var bytes = DataPackageUtilities.DataPackageStart(0x01);
 
             //Act
             var sum = DataPackageUtilities.AddCheckSum(bytes);
             var expectedSum = new byte[9] { 0xEF, 0x1, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x01 };
 
             //Assert            
-            Assert.AreEqual(expectedSum.Length, sum.Length);
-            for (int i = 0; i < sum.Length; i++)
-            {
-                Assert.AreEqual(expectedSum[i], sum[i]);
-            }
+            CollectionAssert.AreEqual(expectedSum, sum);
         }
 
         [TestMethod]
         public void TestHeaderGeneration()
         {
-            var header = DataPackageUtilities.GenerateDataPackageStart(0x01);
+            var header = DataPackageUtilities.DataPackageStart(0x01);
 
             var expected = new byte[7] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
 
-            for (int i = 0; i < expected.Length; i++)
-            {
-                Assert.AreEqual(expected[i], header[i]);
-            }
+            CollectionAssert.AreEqual(expected, header);
         }
 
         [TestMethod]
         public void TestHandshakeGeneration()
         {
-            var command = DataPackageUtilities.GenerateHandshakeDataPackage();
+            var command = DataPackageUtilities.Handshake();
 
             var expectedCommand = new byte[13] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x04, 0x17, 0x00, 0x00, 0x1C };
 
-            for (int i = 0; i < expectedCommand.Length; i++)
-            {
-                Assert.AreEqual(expectedCommand[i], command[i]);
-            }
+            CollectionAssert.AreEqual(expectedCommand, command);
         }
 
         [TestMethod]
         public void TestParseReturn()
         {
-            var sensor = new FingerPrintSensor("COM1");
-
             var commandToParse = new byte[13] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x04, 0x17, 0x00, 0x00, 0x1C };
 
             var expectedByte = 0x01;
 
             Assert.AreEqual(expectedByte, DataPackageUtilities.ParsePackageIdentifier(commandToParse));
+        }
 
-            sensor.Disposeserial();
+        [TestMethod]
+        public void TestStoreTemplate()
+        {
+            var expected = new byte[13] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x06, 0x06, 0x00, 0x00, 0x00 };
+            expected = DataPackageUtilities.AddCheckSum(new List<byte>(expected));
+
+            var storeTemplate = DataPackageUtilities.StoreTemplate(0x00, 0x00);
+
+            CollectionAssert.AreEqual(expected, storeTemplate);
+        }
+
+        [TestMethod]
+        public void TestGenerateTemplate()
+        {
+            var expected = new byte[12] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x03, 0x05, 0x00, 0x09 };
+
+            var generateTemplate = DataPackageUtilities.GenerateTemplate();
+
+            CollectionAssert.AreEqual(expected, generateTemplate);
+        }
+
+        [TestMethod]
+        public void TestValidateCheckSum()
+        {
+            var expectedCommand = new byte[13] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x04, 0x17, 0x00, 0x00, 0x1C };
+
+            var result = DataPackageUtilities.ValidateCheckSum(expectedCommand);
+
+            Assert.IsTrue(result);
         }
     }
 }

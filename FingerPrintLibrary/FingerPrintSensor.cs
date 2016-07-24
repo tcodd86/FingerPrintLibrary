@@ -37,7 +37,7 @@ namespace FingerPrintLibrary
         
         public bool HandShake(out byte confirmationCode)
         {
-            var send = DataPackageUtilities.GenerateHandshakeDataPackage();
+            var send = DataPackageUtilities.Handshake();
             return SendPackageParseResults(send, out confirmationCode);
         }
         
@@ -52,7 +52,7 @@ namespace FingerPrintLibrary
         /// </returns>
         public bool ReadFingerprint(out byte confirmationCode, int maxAttempts = 10)
         {
-            var send = DataPackageUtilities.GenerateGenImageDataPackage();
+            var send = DataPackageUtilities.GenerateImage();
             var success = false;
             confirmationCode = 0x01;
             byte[] result = new byte[12];
@@ -77,7 +77,7 @@ namespace FingerPrintLibrary
 
         public bool GenerateTemplate(out byte confirmationCode)
         {
-            var send = DataPackageUtilities.GenerateTemplateDataPackage();
+            var send = DataPackageUtilities.GenerateTemplate();
             return SendPackageParseResults(send, out confirmationCode);
         }
 

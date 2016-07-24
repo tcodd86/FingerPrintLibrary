@@ -9,9 +9,9 @@ namespace FingerPrintLibrary
     public class DataPackageUtilities
     {
         #region CreateInstructions
-        public static byte[] GenerateHandshakeDataPackage()
+        public static byte[] Handshake()
         {
-            var handshake = GenerateDataPackageStart(SensorCodes.PID_COMMANDPACKET);
+            var handshake = DataPackageStart(SensorCodes.PID_COMMANDPACKET);
             
             handshake.AddRange(new byte[2] { 0x00, 0x04 });
             handshake.Add(SensorCodes.HANDSHAKE);
@@ -20,9 +20,9 @@ namespace FingerPrintLibrary
             return AddCheckSum(handshake);
         }
 
-        public static byte[] GenerateGenImageDataPackage()
+        public static byte[] GenerateImage()
         {
-            var genImg = GenerateDataPackageStart(SensorCodes.PID_COMMANDPACKET);
+            var genImg = DataPackageStart(SensorCodes.PID_COMMANDPACKET);
             genImg.AddRange(new byte[] { 0x00, 0x03 });
             genImg.Add(SensorCodes.GETIMAGE);
             return AddCheckSum(genImg);
@@ -30,16 +30,16 @@ namespace FingerPrintLibrary
 
         public static byte[] GenerateCharFileFromImgDataPackage(byte buffer)
         {
-            var genChar = GenerateDataPackageStart();
+            var genChar = DataPackageStart();
             genChar.AddRange(new byte[] { 0x00, 0x04 });
             genChar.Add(SensorCodes.IMAGE2TZ);
             genChar.Add(buffer);
             return AddCheckSum(genChar);
         }
 
-        public static byte[] GenerateTemplateDataPackage()
+        public static byte[] GenerateTemplate()
         {
-            var genTemplate = GenerateDataPackageStart();
+            var genTemplate = DataPackageStart();
             genTemplate.AddRange(new byte[] { 0x00, 0x03 });
             genTemplate.Add(SensorCodes.REGMODEL);
             return AddCheckSum(genTemplate);
@@ -47,7 +47,7 @@ namespace FingerPrintLibrary
 
         public static byte[] StoreTemplate(byte bufferNumber, Int16 locationNumber)
         {
-            var storeTemplate = GenerateDataPackageStart();
+            var storeTemplate = DataPackageStart();
             storeTemplate.AddRange(new byte[] { 0x00, 0x06 });
             storeTemplate.Add(SensorCodes.STORE);
             storeTemplate.Add(bufferNumber);
@@ -116,7 +116,7 @@ namespace FingerPrintLibrary
         /// <returns>
         /// List of bytes with Header, Address, and Package Identifier at the start.
         /// </returns>
-        public static List<byte> GenerateDataPackageStart(byte packageIdentifier = 0x01)
+        public static List<byte> DataPackageStart(byte packageIdentifier = 0x01)
         {
             var dataPackage = new List<byte>();
 
