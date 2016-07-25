@@ -39,5 +39,13 @@ namespace FingerPrintTestProject
             //5. Create template from Char buffer 1 & 2 which is stored in both Char buffers
             //6. Store template in next available template position (if position = -1) or specified location
         }
+
+        public bool FingerPrintSearch()
+        {
+            throw new NotImplementedException();
+            //1. Read fingerprint and store in ImageBuffer
+            //2. Convert into Char file and store in Char Buffer 1
+            //3. Search for fingerprint in library
+        }
     }
 }

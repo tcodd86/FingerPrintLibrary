@@ -45,22 +45,24 @@ namespace FingerPrintLibrary
             return AddCheckSum(genTemplate);
         }
 
-        public static byte[] StoreTemplate(byte bufferNumber, Int16 locationNumber)
+        public static byte[] StoreTemplate(byte bufferNumber, byte[] locationNumber)
         {
             var storeTemplate = DataPackageStart();
             storeTemplate.AddRange(new byte[] { 0x00, 0x06 });
             storeTemplate.Add(SensorCodes.STORE);
-            storeTemplate.Add(bufferNumber);
-            var loc = BitConverter.GetBytes(locationNumber);
-            if (!BitConverter.IsLittleEndian)
-            {
-                loc = loc.Reverse().ToArray();
-            }
-            storeTemplate.AddRange(loc);
+            storeTemplate.Add(bufferNumber);            
+            storeTemplate.AddRange(locationNumber);
             return AddCheckSum(storeTemplate);            
         }
-        #endregion
-                
+
+        public static byte[] GetNumberOfTemplates()
+        {
+            var getTemplates = DataPackageStart();
+            getTemplates.AddRange(new byte[] { 0x00, 0x03 });
+            getTemplates.Add(SensorCodes.TEMPLATECOUNT);
+            return AddCheckSum(getTemplates);
+        }
+        
         /// <summary>
         /// Returns a byte array of data with a 2 byte checksum appended.
         /// </summary>
@@ -126,11 +128,17 @@ namespace FingerPrintLibrary
 
             return dataPackage;
         }
+        #endregion
 
         #region Parsing
         public static int ParsePackageLength(byte[] buffer)
         {
             var subArray = buffer.Skip(7).Take(2);
+            return ByteToShort(subArray);
+        }
+
+        public static Int16 ByteToShort(IEnumerable<byte> subArray)
+        {
             if (!BitConverter.IsLittleEndian)
             {
                 return BitConverter.ToInt16(subArray.ToArray(), 0);
@@ -138,6 +146,19 @@ namespace FingerPrintLibrary
             else
             {
                 return BitConverter.ToInt16(subArray.Reverse().ToArray(), 0);
+            }
+        }
+
+        public static byte[] ShortToByte(Int16 count)
+        {
+            var array = BitConverter.GetBytes(count);
+            if (BitConverter.IsLittleEndian)
+            {
+                return array.Reverse().ToArray();
+            }
+            else
+            {
+                return array;
             }
         }
 
@@ -171,9 +192,9 @@ namespace FingerPrintLibrary
 
         public static byte[] ParsePackageContents(byte[] buffer)
         {
-            //First 9 bytes are other info, last 2 are checksum
+            //First 10 bytes are other info, last 2 are checksum
             ValidateMinimumLength(buffer);
-            return buffer.Skip(9).Take(buffer.Count() - 11).ToArray();
+            return buffer.Skip(10).Take(buffer.Count() - 12).ToArray();
         }
         #endregion
 

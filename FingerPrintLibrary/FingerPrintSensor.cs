@@ -81,6 +81,29 @@ namespace FingerPrintLibrary
             return SendPackageParseResults(send, out confirmationCode);
         }
 
+        public bool GetNumberOfTemplates(out byte confirmationCode, out Int16 numberOfTemplates)
+        {
+            var send = DataPackageUtilities.GetNumberOfTemplates();
+            var result = Wrapper.SendAndReadSerial(send).Result;
+            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
+            numberOfTemplates = DataPackageUtilities.ByteToShort(DataPackageUtilities.ParsePackageContents(result));
+            return DataPackageUtilities.ParseSuccess(result);
+        }
+
+        public bool StoreTemplate(out byte confirmationCode, Int16 positionToStoreTemplate, byte charBufferToUse)
+        {
+            var positionAsBytes = DataPackageUtilities.ShortToByte(positionToStoreTemplate);
+            var send = DataPackageUtilities.StoreTemplate(charBufferToUse, positionAsBytes);
+            return SendPackageParseResults(send, out confirmationCode);
+        }
+
+        public string GetConfirmationCodeMessage(byte confirmationCode)
+        {
+            string message = "";
+            SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
+            return message;
+        }
+
         /// <summary>
         /// Transmits send and parses results.
         /// </summary>
