@@ -59,7 +59,7 @@ namespace FingerprintTest
             var expected = new byte[13] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x06, 0x06, 0x00, 0x00, 0x00 };
             expected = DataPackageUtilities.AddCheckSum(new List<byte>(expected));
 
-            var storeTemplate = DataPackageUtilities.StoreTemplate(0x00, 0x00);
+            var storeTemplate = DataPackageUtilities.StoreTemplate(0x00, new byte[] { 0x00 });
 
             CollectionAssert.AreEqual(expected, storeTemplate);
         }

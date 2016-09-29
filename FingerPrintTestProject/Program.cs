@@ -27,6 +27,16 @@ namespace FingerPrintTestProject
 
             Console.WriteLine(success ? "Successfully connected to the fingerprint sensor." : "Failed to connect");
 
+            if (success)
+            {
+                var readSucccess = ReadFingerprint(sensor, out handshakeConfirmationCode);
+                if (!readSucccess)
+                {
+                    string message;
+                    SensorCodes.ConfirmationCodes.TryGetValue(handshakeConfirmationCode, out message);
+                    Console.WriteLine($"{message}");
+                }
+            }
             Console.ReadLine();
         }
 
@@ -149,12 +159,24 @@ namespace FingerPrintTestProject
             return read;
         }
 
-        public bool FingerPrintSearch()
+        public bool FingerPrintSearch(FingerPrintSensor sensor)
         {
+            byte confirmationCode;
             throw new NotImplementedException();
             //1. Read fingerprint and store in ImageBuffer
+            var readSuccess = sensor.ReadFingerprint(out confirmationCode);
+            if (!readSuccess)
+            {
+                string message;
+                SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
+                Console.WriteLine(message);
+                return false;
+            }
             //2. Convert into Char file and store in Char Buffer 1
+            var charSuccess = sensor.GenerateCharacterFileFromImage(out confirmationCode, 1);
+            charSuccess = sensor.GenerateCharacterFileFromImage(out confirmationCode, 2);
             //3. Search for fingerprint in library
+            //still need to implement
         }
     }
 }
