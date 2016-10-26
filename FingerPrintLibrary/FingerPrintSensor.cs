@@ -97,6 +97,15 @@ namespace FingerPrintLibrary
             return SendPackageParseResults(send, out confirmationCode);
         }
 
+        public bool PreciseMatchFingerprint(out byte confirmationCode, out short matchingScore)
+        {
+            var preciseMatching = DataPackageUtilities.MatchFingerPrint();
+            var result = Wrapper.SendAndReadSerial(preciseMatching).Result;
+            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
+            matchingScore = DataPackageUtilities.ByteToShort(DataPackageUtilities.ParsePackageContents(result));
+            return DataPackageUtilities.ParseSuccess(result);
+        }
+
         public string GetConfirmationCodeMessage(byte confirmationCode)
         {
             string message = "";

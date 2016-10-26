@@ -62,7 +62,15 @@ namespace FingerPrintLibrary
             getTemplates.Add(SensorCodes.TEMPLATECOUNT);
             return AddCheckSum(getTemplates);
         }
-        
+
+        public static byte[] MatchFingerPrint()
+        {
+            var preciseMatch = DataPackageStart();
+            preciseMatch.AddRange(new byte[] { 0x00, 0x03 });
+            preciseMatch.Add(SensorCodes.MATCH);
+            return AddCheckSum(preciseMatch);
+        }
+
         /// <summary>
         /// Returns a byte array of data with a 2 byte checksum appended.
         /// </summary>

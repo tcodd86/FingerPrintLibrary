@@ -176,6 +176,8 @@ namespace FingerPrintTestProject
             var charSuccess = sensor.GenerateCharacterFileFromImage(out confirmationCode, 1);
             charSuccess = sensor.GenerateCharacterFileFromImage(out confirmationCode, 2);
             //3. Search for fingerprint in library
+            short matchLevel;
+            var matchSuccess = sensor.PreciseMatchFingerprint(out confirmationCode, out matchLevel);
             //still need to implement
         }
     }
