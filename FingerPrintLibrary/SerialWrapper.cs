@@ -46,6 +46,11 @@ namespace FingerPrintLibrary
             }
         }
 
+        public static string[] GetPorts()
+        {
+            return SerialPort.GetPortNames();
+        }
+
         private event EventHandler<ReadFinishedEventArgs> SomeEvent;
 
         private void OnReadBufferFinished(ReadFinishedEventArgs e)

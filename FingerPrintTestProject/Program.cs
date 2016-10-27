@@ -14,11 +14,18 @@ namespace FingerPrintTestProject
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Available ports are:");
+            var ports = SerialWrapper.GetPorts();
+            foreach (string name in ports)
+            {
+                Console.WriteLine(name);
+            }
+            Console.WriteLine();
             Console.WriteLine("Enter the COM port the fingerprint sensor is on and press Enter.");
 
             var comPort = Console.ReadLine();
 
-            Console.WriteLine("Looking for fingerprint sensor on port " + comPort + ".");
+            Console.WriteLine($"Looking for fingerprint sensor on port {comPort}.");
 
             var sensor = new FingerPrintSensor(comPort);
 
