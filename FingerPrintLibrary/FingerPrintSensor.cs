@@ -80,9 +80,9 @@ namespace FingerPrintLibrary
             return SendPackageParseResults(send, out confirmationCode);
         }
 
-        public bool GetNumberOfTemplates(out byte confirmationCode, out Int16 numberOfTemplates)
+        public bool ReadValidTemplateNumber(out byte confirmationCode, out Int16 numberOfTemplates)
         {
-            var send = DataPackageUtilities.GetNumberOfTemplates();
+            var send = DataPackageUtilities.ReadValidTemplateNumber();
             var result = Wrapper.SendAndReadSerial(send).Result;
             confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
             numberOfTemplates = DataPackageUtilities.ByteToShort(DataPackageUtilities.ParsePackageContents(result));
@@ -104,6 +104,69 @@ namespace FingerPrintLibrary
             matchingScore = DataPackageUtilities.ByteToShort(DataPackageUtilities.ParsePackageContents(result));
             return DataPackageUtilities.ParseSuccess(result);
         }
+
+        #region SystemParameters
+        public bool GetStatusRegister(out byte[] statusRegister)
+        {
+            return ReadSystemParameter(out statusRegister, 0, 2);
+        }
+
+        public bool GetSystemIdentifierCode(out byte[] systemIdentifier)
+        {
+            return ReadSystemParameter(out systemIdentifier, 2, 2);
+        }
+
+        public bool GetFingerLibrarySize(out byte[] fingerLibrarySize)
+        {
+            return ReadSystemParameter(out fingerLibrarySize, 4, 2);
+        }
+
+        public bool GetSecurityLevel(out byte[] securityLevel)
+        {
+            return ReadSystemParameter(out securityLevel, 6, 2);
+        }
+
+        public bool GetDeviceAddress(out byte[] deviceAddress)
+        {
+            return ReadSystemParameter(out deviceAddress, 8, 4);
+        }
+
+        public bool GetDataPacketSize(out byte[] dataPacketSize)
+        {
+            return ReadSystemParameter(out dataPacketSize, 12, 2);
+        }
+
+        public bool GetBaudSettings(out byte[] baudSettings)
+        {
+            return ReadSystemParameter(out baudSettings, 14, 2);
+        }
+
+        private bool ReadSystemParameter(out byte[] statusRegister, int skip, int take)
+        {
+            byte confirmationCode;
+            bool success;
+            var result = GetSystemParameters(out confirmationCode, out success);
+            if (!success)
+            {
+                statusRegister = new byte[] { };
+
+            }
+            else
+            {
+                statusRegister = result.Skip(skip).Take(take).ToArray();
+            }
+            return success;
+        }
+        
+        private byte[] GetSystemParameters(out byte confirmationCode, out bool success)
+        {
+            var readSysParam = DataPackageUtilities.ReadSystemParameters();
+            var result = Wrapper.SendAndReadSerial(readSysParam).Result;
+            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
+            success = DataPackageUtilities.ParseSuccess(result);
+            return result;
+        }
+#endregion
 
         public string GetConfirmationCodeMessage(byte confirmationCode)
         {

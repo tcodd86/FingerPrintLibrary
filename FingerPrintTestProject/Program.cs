@@ -128,7 +128,7 @@ namespace FingerPrintTestProject
             if (position == -1)
             {
                 Int16 templateCount;
-                success = sensor.GetNumberOfTemplates(out confirmationCode, out templateCount);
+                success = sensor.ReadValidTemplateNumber(out confirmationCode, out templateCount);
                 if (!success)
                 {
                     SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);

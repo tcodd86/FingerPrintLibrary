@@ -55,7 +55,7 @@ namespace FingerPrintLibrary
             return AddCheckSum(storeTemplate);            
         }
 
-        public static byte[] GetNumberOfTemplates()
+        public static byte[] ReadValidTemplateNumber()
         {
             var getTemplates = DataPackageStart();
             getTemplates.AddRange(new byte[] { 0x00, 0x03 });
@@ -69,6 +69,14 @@ namespace FingerPrintLibrary
             preciseMatch.AddRange(new byte[] { 0x00, 0x03 });
             preciseMatch.Add(SensorCodes.MATCH);
             return AddCheckSum(preciseMatch);
+        }
+
+        public static byte[] ReadSystemParameters()
+        {
+            var readSysParam = DataPackageStart();
+            readSysParam.AddRange(new byte[] { 0x00, 0x03 });
+            readSysParam.Add(SensorCodes.READ_SYS);
+            return AddCheckSum(readSysParam);
         }
 
         /// <summary>
