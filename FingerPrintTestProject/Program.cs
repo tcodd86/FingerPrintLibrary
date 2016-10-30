@@ -14,40 +14,69 @@ namespace FingerPrintTestProject
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Available ports are:");
-            var ports = SerialWrapper.GetPorts();
-            foreach (string name in ports)
+            bool success = false;
+            FingerPrintSensor sensor = null;
+
+            while (!success)
             {
-                Console.WriteLine(name);
-            }
-            Console.WriteLine();
-            Console.WriteLine("Enter the COM port the fingerprint sensor is on and press Enter.");
-
-            var comPort = Console.ReadLine();
-
-            Console.WriteLine($"Looking for fingerprint sensor on port {comPort}.");
-
-            var sensor = new FingerPrintSensor(comPort);
-
-            byte handshakeConfirmationCode;
-            var success = sensor.HandShake(out handshakeConfirmationCode);
-
-            Console.WriteLine(success ? "Successfully connected to the fingerprint sensor." : "Failed to connect");
-
-            if (success)
-            {
-                var readSucccess = ReadFingerprint(sensor, out handshakeConfirmationCode);
-                if (!readSucccess)
+                Console.WriteLine("Available ports are:");
+                var ports = SerialWrapper.GetPorts();
+                foreach (string name in ports)
                 {
-                    string message;
-                    SensorCodes.ConfirmationCodes.TryGetValue(handshakeConfirmationCode, out message);
-                    Console.WriteLine($"{message}");
+                    Console.WriteLine(name);
+                }
+                Console.WriteLine();
+                Console.WriteLine("Enter the COM port the fingerprint sensor is on and press Enter.");
+
+                var comPort = Console.ReadLine();
+
+                Console.WriteLine($"Looking for fingerprint sensor on port {comPort}.");
+
+                sensor = new FingerPrintSensor(comPort);
+
+                byte handshakeConfirmationCode;
+                success = sensor.HandShake(out handshakeConfirmationCode);
+
+                Console.WriteLine(success ? "Successfully connected to the fingerprint sensor." : "Failed to connect");
+            }
+
+            var read = string.Empty;
+
+            while(!string.Equals(read, "exit", StringComparison.InvariantCultureIgnoreCase))
+            {
+                Console.WriteLine("Enter command (Search, Enroll, Exit)");
+                read = Console.ReadLine();
+                byte handshakeConfirmationCode;
+                switch (read)
+                {
+                    case "Search":
+                        success = FingerPrintSearch(sensor);
+                        Console.WriteLine(success ? "Matched!" : "Failed to match.");
+                        Console.ReadLine();
+                        break;
+                        //var readSucccess = ReadFingerprint(sensor, out handshakeConfirmationCode);
+                        //if (!readSucccess)
+                        //{
+                        //    string message;
+                        //    SensorCodes.ConfirmationCodes.TryGetValue(handshakeConfirmationCode, out message);
+                        //    Console.WriteLine($"{message}");
+                        //}
+                        //Console.ReadLine();
+                        //break;
+                    case "Enroll":
+                        success = EnrollFingerPrint(sensor);
+                        Console.WriteLine(success ? "Successfully enrolled fingerprint!" : "Failed to enroll.");
+                        break;
+                    case "Exit":
+                        read = "exit";
+                        break;
+                    default:
+                        break;
                 }
             }
-            Console.ReadLine();
         }
 
-        public bool EnrollFingerPrint(FingerPrintSensor sensor, short position = -1)
+        public static bool EnrollFingerPrint(FingerPrintSensor sensor, short position = -1)
         {
             byte confirmationCode;
             string message;
@@ -77,7 +106,7 @@ namespace FingerPrintTestProject
             }
 
             //4. Convert into Char file and store in Char Buffer 2
-            success = sensor.GenerateCharacterFileFromImage(out confirmationCode, 0x01);
+            success = sensor.GenerateCharacterFileFromImage(out confirmationCode, 0x02);
             if (!success)
             {
                 SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
@@ -87,7 +116,7 @@ namespace FingerPrintTestProject
 
             //5. Create template from Char buffer 1 & 2 which is stored in both Char buffers
             success = sensor.GenerateTemplate(out confirmationCode);
-            success = sensor.GenerateCharacterFileFromImage(out confirmationCode, 0x01);
+            //success = sensor.GenerateCharacterFileFromImage(out confirmationCode, 0x01);
             if (!success)
             {
                 SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
@@ -166,12 +195,12 @@ namespace FingerPrintTestProject
             return read;
         }
 
-        public bool FingerPrintSearch(FingerPrintSensor sensor)
+        public static bool FingerPrintSearch(FingerPrintSensor sensor)
         {
             byte confirmationCode;
-            throw new NotImplementedException();
+            short matchingScore;
             //1. Read fingerprint and store in ImageBuffer
-            var readSuccess = sensor.ReadFingerprint(out confirmationCode);
+            var readSuccess = sensor.PreciseMatchFingerprint(out confirmationCode, out matchingScore);
             if (!readSuccess)
             {
                 string message;
@@ -185,7 +214,8 @@ namespace FingerPrintTestProject
             //3. Search for fingerprint in library
             short matchLevel;
             var matchSuccess = sensor.PreciseMatchFingerprint(out confirmationCode, out matchLevel);
-            //still need to implement
+
+            return matchSuccess;
         }
     }
 }
