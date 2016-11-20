@@ -162,7 +162,7 @@ namespace FingerPrintTestProject
                     if (position == -1)
                     {
                         position = (short)(positions[positions.Count - 1] + 1);
-                        if (position > 119)
+                        if (position > sensor.templateCapacity - 1)
                         {
                             return false;
                         }
@@ -186,9 +186,9 @@ namespace FingerPrintTestProject
             }
             else
             {
-                if (position > 120)
+                if (position > sensor.templateCapacity - 1)
                 {
-                    throw new ArgumentOutOfRangeException("position cannot be greater than 255.");
+                    throw new ArgumentOutOfRangeException($"position cannot be greater than {sensor.templateCapacity - 1}.");
                 }
                 success = sensor.StoreTemplate(out confirmationCode, position, 0x01);
                 if (!success)
@@ -294,7 +294,7 @@ namespace FingerPrintTestProject
             var positions = new List<int>();
             byte confirmationCode;
 
-            for (short i = 0; i < 120; i++)
+            for (short i = 0; i < sensor.templateCapacity - 1; i++)
             {
                 var position = DataPackageUtilities.ShortToByte(i);
                 var result = sensor.ReadLibaryPosition(position, out confirmationCode);

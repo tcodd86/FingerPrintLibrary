@@ -10,6 +10,7 @@ namespace FingerPrintLibrary
     public class FingerPrintSensor
     {
         public SerialWrapper Wrapper;
+        public int templateCapacity { get; private set; }
 
         #region Constructors
         /// <summary>
@@ -17,23 +18,53 @@ namespace FingerPrintLibrary
         /// </summary>
         /// <param name="baudRate">Baud rate of sensor.</param>
         /// <param name="address">Address of sensor.</param>
-        public FingerPrintSensor(int baudRate, string address)
+        /// <param name="ABC">Model specifier indicating capacity. A, B, or C.</param>
+        public FingerPrintSensor(int baudRate, string address, char ABC)
         {
             //Timeout to allow sensor to warm up per spec
             Thread.Sleep(500);
             Wrapper = new SerialWrapper(baudRate, address);
+            switch (ABC)
+            {
+                case 'B':
+                    templateCapacity = 375;
+                    break;
+                case 'C':
+                    templateCapacity = 880;
+                    break;
+                case 'A':
+                default:
+                    templateCapacity = 120;
+                    break;
+            }
         }
 
         /// <summary>
-        /// Uses default Baud Rate of 57600
+        /// Uses default Baud Rate of 57600 and default of model 'A' with 120 fingerprint capacity.
         /// </summary>
         /// <param name="address">
         /// Address of fingerprint sensor.
         /// </param>
-        public FingerPrintSensor(string address) : this(57600, address)
+        public FingerPrintSensor(string address) : this(57600, address, 'A')
+        { }
+
+        /// <summary>
+        /// Uses default model 'A' with 120 fingerprint capacity.
+        /// </summary>
+        /// <param name="address">Address of sensor.</param>
+        /// <param name="baudRate">Baud rate.</param>
+        public FingerPrintSensor(string address, int baudRate) : this(baudRate, address, 'A')
+        { }
+
+        /// <summary>
+        /// Uses default Baud rate of 57600.
+        /// </summary>
+        /// <param name="address">Address of sensor.</param>
+        /// <param name="ABC">Model of sensor to determine capacity. A, B, or C.</param>
+        public FingerPrintSensor(string address, char ABC) : this(57600, address, ABC)
         { }
         #endregion
-
+        
         public bool HandShake(out byte confirmationCode)
         {
             var send = DataPackageUtilities.Handshake();
