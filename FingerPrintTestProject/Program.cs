@@ -131,25 +131,62 @@ namespace FingerPrintTestProject
             if (position == -1)
             {
                 Int16 templateCount;
-                success = sensor.ReadValidTemplateNumber(out confirmationCode, out templateCount);
+                //success = sensor.ReadValidTemplateNumber(out confirmationCode, out templateCount);
+                var positions = GetUsedLibraryPositions(sensor);
+                if (positions.Count == 0)
+                {
+                    position = 0;
+                }
+                else if (positions.Count == 1)
+                {
+                    if (positions[0] == 0x00)
+                    {
+                        position = 1;
+                    }
+                    else
+                    {
+                        position = 0;
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < positions.Count - 1; i++)
+                    {
+                        if (positions[i + 1] - positions[i] != 1)
+                        {
+                            position = (short)(i + 1);
+                            break;
+                        }
+                    }
+
+                    if (position == -1)
+                    {
+                        position = (short)(positions[positions.Count - 1] + 1);
+                        if (position > 119)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                
                 if (!success)
                 {
                     SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
-                    Console.WriteLine("Failed to read number of templates. Failure message: " + message);
+                    Console.WriteLine("Failed to get available templates.");
                     return success;
                 }
 
-                success = sensor.StoreTemplate(out confirmationCode, templateCount, 0x01);
+                success = sensor.StoreTemplate(out confirmationCode, position, 0x01);
                 if (!success)
                 {
                     SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
-                    Console.WriteLine("Failed to read number of templates. Failure message: " + message);
+                    Console.WriteLine("Failed to store template. Failure message: " + message);
                     return success;
                 }
             }
             else
             {
-                if (position > 255)
+                if (position > 120)
                 {
                     throw new ArgumentOutOfRangeException("position cannot be greater than 255.");
                 }
@@ -242,6 +279,18 @@ namespace FingerPrintTestProject
 
         public static void ReadLibraryPositions(FingerPrintSensor sensor)
         {
+            List<int> positions = GetUsedLibraryPositions(sensor);
+
+            Console.WriteLine($"{positions.Count} templates are stored in the library in positions:");
+            foreach (var pos in positions)
+            {
+                Console.WriteLine(pos);
+            }
+            Console.ReadLine();
+        }
+
+        private static List<int> GetUsedLibraryPositions(FingerPrintSensor sensor)
+        {
             var positions = new List<int>();
             byte confirmationCode;
 
@@ -255,12 +304,7 @@ namespace FingerPrintTestProject
                 }
             }
 
-            Console.WriteLine($"{positions.Count} templates are stored in the library in positions:");
-            foreach(var pos in positions)
-            {
-                Console.WriteLine(pos);
-            }
-            Console.ReadLine();
+            return positions;
         }
     }
 }
