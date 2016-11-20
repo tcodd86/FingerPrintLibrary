@@ -57,7 +57,7 @@ namespace FingerPrintLibrary
         public static byte SEARCH = 0x04;
         public static byte REGMODEL = 0x05;
         public static byte STORE = 0x06;
-        public static byte LOAD = 0x07;
+        public static byte LOADCHAR = 0x07;
         public static byte UPLOAD_TEMPLATE = 0x08;
         public static byte DOWN_TEMPLATE = 0x09;
         public static byte UP_IMAGE = 0x0A;

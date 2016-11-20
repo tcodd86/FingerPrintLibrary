@@ -33,13 +33,19 @@ namespace FingerPrintLibrary
         public FingerPrintSensor(string address) : this(57600, address)
         { }
         #endregion
-        
+
         public bool HandShake(out byte confirmationCode)
         {
             var send = DataPackageUtilities.Handshake();
             return SendPackageParseResults(send, out confirmationCode);
         }
-        
+
+        public bool ReadLibaryPosition(byte[] position, out byte confirmationCode)
+        {
+            var send = DataPackageUtilities.ReadTemplateAtLocation(position);
+            return SendPackageParseResults(send, out confirmationCode);
+        }
+
         /// <summary>
         /// Attempts to read fingerprint off of sensor.
         /// </summary>
@@ -49,7 +55,7 @@ namespace FingerPrintLibrary
         /// <returns>
         /// True if fingerprint is successfully read.
         /// </returns>
-        public bool ReadFingerprint(out byte confirmationCode, int maxAttempts = 10)
+        public bool ReadFingerprint(out byte confirmationCode, int maxAttempts = 100)
         {
             var send = DataPackageUtilities.GenerateImage();
             var success = false;

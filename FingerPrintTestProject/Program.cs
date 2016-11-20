@@ -44,7 +44,7 @@ namespace FingerPrintTestProject
 
             while(!string.Equals(read, "exit", StringComparison.InvariantCultureIgnoreCase))
             {
-                Console.WriteLine("Enter command (Search, Enroll, Exit)");
+                Console.WriteLine("Enter command (Search, Enroll, Library, Exit)");
                 read = Console.ReadLine();
                 byte handshakeConfirmationCode;
                 switch (read)
@@ -66,6 +66,9 @@ namespace FingerPrintTestProject
                     case "Enroll":
                         success = EnrollFingerPrint(sensor);
                         Console.WriteLine(success ? "Successfully enrolled fingerprint!" : "Failed to enroll.");
+                        break;
+                    case "Library":
+                        ReadLibraryPositions(sensor);
                         break;
                     case "Exit":
                         read = "exit";
@@ -198,24 +201,66 @@ namespace FingerPrintTestProject
         public static bool FingerPrintSearch(FingerPrintSensor sensor)
         {
             byte confirmationCode;
-            short matchingScore;
-            //1. Read fingerprint and store in ImageBuffer
-            var readSuccess = sensor.PreciseMatchFingerprint(out confirmationCode, out matchingScore);
-            if (!readSuccess)
+            bool success;
+            //1. Read fingerprint twice, store in ImageBuffers
+            success = sensor.ReadFingerprint(out confirmationCode);
+            if (!success)
             {
-                string message;
-                SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
-                Console.WriteLine(message);
+                PrintFailureMessage(confirmationCode);
+                return success;
+            }
+            success = sensor.GenerateCharacterFileFromImage(out confirmationCode, 1);
+            success = sensor.ReadFingerprint(out confirmationCode);
+            if (!success)
+            {
+                PrintFailureMessage(confirmationCode);
                 return false;
             }
-            //2. Convert into Char file and store in Char Buffer 1
-            var charSuccess = sensor.GenerateCharacterFileFromImage(out confirmationCode, 1);
-            charSuccess = sensor.GenerateCharacterFileFromImage(out confirmationCode, 2);
-            //3. Search for fingerprint in library
-            short matchLevel;
-            var matchSuccess = sensor.PreciseMatchFingerprint(out confirmationCode, out matchLevel);
+            success = sensor.GenerateCharacterFileFromImage(out confirmationCode, 2);
 
-            return matchSuccess;
+            //3. Need to generate template first
+            success = sensor.GenerateTemplate(out confirmationCode);
+            if (!success)
+            {
+                PrintFailureMessage(confirmationCode);
+                return false;
+            }
+
+            //4. Search for fingerprint in library
+            short matchLevel;
+            success = sensor.PreciseMatchFingerprint(out confirmationCode, out matchLevel);
+
+            return success;
+        }
+
+        private static void PrintFailureMessage(byte confirmationCode)
+        {
+            string message;
+            SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
+            Console.WriteLine(message);
+        }
+
+        public static void ReadLibraryPositions(FingerPrintSensor sensor)
+        {
+            var positions = new List<int>();
+            byte confirmationCode;
+
+            for (short i = 0; i < 120; i++)
+            {
+                var position = DataPackageUtilities.ShortToByte(i);
+                var result = sensor.ReadLibaryPosition(position, out confirmationCode);
+                if (result)
+                {
+                    positions.Add((int)i);
+                }
+            }
+
+            Console.WriteLine($"{positions.Count} templates are stored in the library in positions:");
+            foreach(var pos in positions)
+            {
+                Console.WriteLine(pos);
+            }
+            Console.ReadLine();
         }
     }
 }

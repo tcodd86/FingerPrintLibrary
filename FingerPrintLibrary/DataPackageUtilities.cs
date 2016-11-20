@@ -50,17 +50,33 @@ namespace FingerPrintLibrary
             var storeTemplate = DataPackageStart();
             storeTemplate.AddRange(new byte[] { 0x00, 0x06 });
             storeTemplate.Add(SensorCodes.STORE);
-            storeTemplate.Add(bufferNumber);            
+            storeTemplate.Add(bufferNumber);         
             storeTemplate.AddRange(locationNumber);
             return AddCheckSum(storeTemplate);            
         }
 
+
+        /// <summary>
+        /// Really not sure what this command does, don't use for now.
+        /// </summary>
+        /// <returns></returns>
+        [Obsolete]
         public static byte[] ReadValidTemplateNumber()
         {
             var getTemplates = DataPackageStart();
             getTemplates.AddRange(new byte[] { 0x00, 0x03 });
             getTemplates.Add(SensorCodes.TEMPLATECOUNT);
             return AddCheckSum(getTemplates);
+        }
+
+        public static byte[] ReadTemplateAtLocation(byte[] location, byte buffer = 0x01)
+        {
+            var readTemplate = DataPackageStart();
+            readTemplate.AddRange(new byte[] { 0x00, 0x06 });
+            readTemplate.Add(SensorCodes.LOADCHAR);
+            readTemplate.Add(buffer);
+            readTemplate.AddRange(location);
+            return AddCheckSum(readTemplate);
         }
 
         public static byte[] MatchFingerPrint()
