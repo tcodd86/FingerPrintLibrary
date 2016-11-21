@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using FingerPrintLibrary;
+using FingerprintTest;
 using System.Collections.Generic;
 
 namespace FingerprintTest
@@ -59,7 +60,7 @@ namespace FingerprintTest
             var expected = new byte[13] { 0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x06, 0x06, 0x00, 0x00, 0x00 };
             expected = DataPackageUtilities.AddCheckSum(new List<byte>(expected));
 
-            var storeTemplate = DataPackageUtilities.StoreTemplate(0x00, new byte[] { 0x00 });
+            var storeTemplate = DataPackageUtilities.StoreTemplate(0x00, new byte[] { 0x00, 0x00 });
 
             CollectionAssert.AreEqual(expected, storeTemplate);
         }
@@ -82,6 +83,52 @@ namespace FingerprintTest
             var result = DataPackageUtilities.ValidateCheckSum(expectedCommand);
 
             Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public void TestNextAvailablePosition()
+        {
+            short position;
+            bool result;
+
+            //Test sequential list starting at 0
+            var positions = new List<int>() { 0, 1, 2 };
+            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            Assert.AreEqual(3, position);
+
+            //Test list with gap
+            positions.Add(5);
+            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            Assert.AreEqual(3, position);
+
+            //Test list with no elements
+            positions = new List<int>();
+            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            Assert.AreEqual(0, position);
+
+            //Test list where the first element is missing.
+            positions = new List<int>() { 1, 2, 4, 5 };
+            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            Assert.AreEqual(0, position);
+
+            //Test list that's at capacity
+            positions = new List<int>();
+            for (int i = 0; i < 120; i++)
+            {
+                positions.Add(i);
+            }
+            result = SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            Assert.AreEqual(false, result);
+            Assert.AreEqual(-1, position);
+
+            //Test list one under capacity
+            positions = new List<int>();
+            for (int i = 0; i < 119; i++)
+            {
+                positions.Add(i);
+            }
+            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            Assert.AreEqual(119, position);
         }
     }
 }

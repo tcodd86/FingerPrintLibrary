@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 
 using FingerPrintLibrary;
 using System.Threading;
@@ -46,7 +42,6 @@ namespace FingerPrintTestProject
             {
                 Console.WriteLine("Enter command (Search, Enroll, Library, Exit)");
                 read = Console.ReadLine();
-                byte handshakeConfirmationCode;
                 switch (read)
                 {
                     case "Search":
@@ -54,15 +49,6 @@ namespace FingerPrintTestProject
                         Console.WriteLine(success ? "Matched!" : "Failed to match.");
                         Console.ReadLine();
                         break;
-                        //var readSucccess = ReadFingerprint(sensor, out handshakeConfirmationCode);
-                        //if (!readSucccess)
-                        //{
-                        //    string message;
-                        //    SensorCodes.ConfirmationCodes.TryGetValue(handshakeConfirmationCode, out message);
-                        //    Console.WriteLine($"{message}");
-                        //}
-                        //Console.ReadLine();
-                        //break;
                     case "Enroll":
                         success = EnrollFingerPrint(sensor);
                         Console.WriteLine(success ? "Successfully enrolled fingerprint!" : "Failed to enroll.");
@@ -130,45 +116,10 @@ namespace FingerPrintTestProject
             //6. Store template in next available template position (if position = -1) or specified location
             if (position == -1)
             {
-                Int16 templateCount;
                 //success = sensor.ReadValidTemplateNumber(out confirmationCode, out templateCount);
-                var positions = GetUsedLibraryPositions(sensor);
-                if (positions.Count == 0)
-                {
-                    position = 0;
-                }
-                else if (positions.Count == 1)
-                {
-                    if (positions[0] == 0x00)
-                    {
-                        position = 1;
-                    }
-                    else
-                    {
-                        position = 0;
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < positions.Count - 1; i++)
-                    {
-                        if (positions[i + 1] - positions[i] != 1)
-                        {
-                            position = (short)(i + 1);
-                            break;
-                        }
-                    }
+                var positions = sensor.GetUsedLibraryPositions();
+                success = SensorFunctions.DetermineNextAvailablePosition(out position, positions, sensor.templateCapacity);
 
-                    if (position == -1)
-                    {
-                        position = (short)(positions[positions.Count - 1] + 1);
-                        if (position > sensor.templateCapacity - 1)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                
                 if (!success)
                 {
                     SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
@@ -279,7 +230,7 @@ namespace FingerPrintTestProject
 
         public static void ReadLibraryPositions(FingerPrintSensor sensor)
         {
-            List<int> positions = GetUsedLibraryPositions(sensor);
+            List<int> positions = sensor.GetUsedLibraryPositions();
 
             Console.WriteLine($"{positions.Count} templates are stored in the library in positions:");
             foreach (var pos in positions)
@@ -289,22 +240,5 @@ namespace FingerPrintTestProject
             Console.ReadLine();
         }
 
-        private static List<int> GetUsedLibraryPositions(FingerPrintSensor sensor)
-        {
-            var positions = new List<int>();
-            byte confirmationCode;
-
-            for (short i = 0; i < sensor.templateCapacity - 1; i++)
-            {
-                var position = DataPackageUtilities.ShortToByte(i);
-                var result = sensor.ReadLibaryPosition(position, out confirmationCode);
-                if (result)
-                {
-                    positions.Add((int)i);
-                }
-            }
-
-            return positions;
-        }
     }
 }

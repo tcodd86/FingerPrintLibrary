@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
 
 namespace FingerPrintLibrary
 {
     public class FingerPrintSensor
     {
-        public SerialWrapper Wrapper;
+        private SerialWrapper Wrapper { get; set; }
         public int templateCapacity { get; private set; }
+        public string ErroMessage { get; private set; }
 
         #region Constructors
         /// <summary>
@@ -225,6 +224,30 @@ namespace FingerPrintLibrary
             var result = Wrapper.SendAndReadSerial(send).Result;
             confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
             return DataPackageUtilities.ParseSuccess(result);
+        }
+
+        /// <summary>
+        /// Generates a list of used library positions
+        /// </summary>
+        /// <returns>
+        /// List with addresses of any position in library that already has a template stored.
+        /// </returns>
+        public List<int> GetUsedLibraryPositions()
+        {
+            var positions = new List<int>();
+            byte confirmationCode;
+
+            for (short i = 0; i < templateCapacity - 1; i++)
+            {
+                var position = DataPackageUtilities.ShortToByte(i);
+                var result = ReadLibaryPosition(position, out confirmationCode);
+                if (result)
+                {
+                    positions.Add((int)i);
+                }
+            }
+
+            return positions;
         }
 
         /// <summary>
