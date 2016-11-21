@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "mono",
+            "request": "launch",
+            "program": "${workspaceRoot}/FingerPrintTestProject/bin/Debug/FingerPrintTestProject.exe",
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": "",
+            "runtimeExecutable": null,
+            "env": {},
+            "externalConsole": true
+        }
+    ]
+}
