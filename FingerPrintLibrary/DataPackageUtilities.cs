@@ -13,7 +13,7 @@ namespace FingerPrintLibrary
             
             handshake.AddRange(new byte[2] { 0x00, 0x04 });
             handshake.Add(SensorCodes.HANDSHAKE);
-            //control code (only for handshake?)
+            //control code (only for handshake)
             handshake.Add(0x0);
             return AddCheckSum(handshake);
         }

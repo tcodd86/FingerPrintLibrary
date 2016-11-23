@@ -27,8 +27,15 @@ namespace FingerPrintLibrary
             fingerprintSensor = new FingerPrintSensor(address, baudRate);
         }
         #endregion
-        
-        public SensorResponse EnrollFingerPrint(FingerPrintSensor sensor, short position = -1)
+
+        public SensorResponse HandShake()
+        {
+            byte confirmationCode;
+            var success = fingerprintSensor.HandShake(out confirmationCode);
+            return new SensorResponse(confirmationCode);
+        }
+
+        public SensorResponse EnrollFingerPrint(short position = -1)
         {
             byte confirmationCode;
 
@@ -39,15 +46,15 @@ namespace FingerPrintLibrary
                 //Store template in next available template position (if position = -1) or specified location
                 if (position == -1)
                 {
-                    var positions = sensor.GetUsedLibraryPositions();
-                    var success = FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, sensor.templateCapacity);
+                    var positions = fingerprintSensor.GetUsedLibraryPositions();
+                    var success = FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, fingerprintSensor.templateCapacity);
 
                     if (!success)
                     {
                         return new SensorResponse(false, "Failed to get available templates.");
                     }
 
-                    success = sensor.StoreTemplate(out confirmationCode, position, 0x01);
+                    success = fingerprintSensor.StoreTemplate(out confirmationCode, position, 0x01);
                     if (!success)
                     {
                         return new SensorResponse("Failed to store template. Failure message: ", confirmationCode);
@@ -55,11 +62,11 @@ namespace FingerPrintLibrary
                 }
                 else
                 {
-                    if (position > sensor.templateCapacity - 1)
+                    if (position > fingerprintSensor.templateCapacity - 1)
                     {
-                        throw new ArgumentOutOfRangeException($"position cannot be greater than {sensor.templateCapacity - 1}.");
+                        throw new ArgumentOutOfRangeException($"position cannot be greater than {fingerprintSensor.templateCapacity - 1}.");
                     }
-                    var success = sensor.StoreTemplate(out confirmationCode, position, 0x01);
+                    var success = fingerprintSensor.StoreTemplate(out confirmationCode, position, 0x01);
                     if (!success)
                     {
                         return new SensorResponse("Failed to store template. Failure message: ", confirmationCode);
