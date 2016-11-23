@@ -105,7 +105,6 @@ namespace FingerPrintTestProject
 
             //5. Create template from Char buffer 1 & 2 which is stored in both Char buffers
             success = sensor.GenerateTemplate(out confirmationCode);
-            //success = sensor.GenerateCharacterFileFromImage(out confirmationCode, 0x01);
             if (!success)
             {
                 SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
@@ -116,9 +115,8 @@ namespace FingerPrintTestProject
             //6. Store template in next available template position (if position = -1) or specified location
             if (position == -1)
             {
-                //success = sensor.ReadValidTemplateNumber(out confirmationCode, out templateCount);
                 var positions = sensor.GetUsedLibraryPositions();
-                success = SensorFunctions.DetermineNextAvailablePosition(out position, positions, sensor.templateCapacity);
+                success = FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, sensor.templateCapacity);
 
                 if (!success)
                 {
@@ -182,7 +180,6 @@ namespace FingerPrintTestProject
                     break;
                 }
             }
-
             return read;
         }
 
@@ -239,6 +236,5 @@ namespace FingerPrintTestProject
             }
             Console.ReadLine();
         }
-
     }
 }

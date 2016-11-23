@@ -93,22 +93,22 @@ namespace FingerprintTest
 
             //Test sequential list starting at 0
             var positions = new List<int>() { 0, 1, 2 };
-            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, 120);
             Assert.AreEqual(3, position);
 
             //Test list with gap
             positions.Add(5);
-            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, 120);
             Assert.AreEqual(3, position);
 
             //Test list with no elements
             positions = new List<int>();
-            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, 120);
             Assert.AreEqual(0, position);
 
             //Test list where the first element is missing.
             positions = new List<int>() { 1, 2, 4, 5 };
-            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, 120);
             Assert.AreEqual(0, position);
 
             //Test list that's at capacity
@@ -117,7 +117,7 @@ namespace FingerprintTest
             {
                 positions.Add(i);
             }
-            result = SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            result = FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, 120);
             Assert.AreEqual(false, result);
             Assert.AreEqual(-1, position);
 
@@ -127,7 +127,7 @@ namespace FingerprintTest
             {
                 positions.Add(i);
             }
-            SensorFunctions.DetermineNextAvailablePosition(out position, positions, 120);
+            FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, 120);
             Assert.AreEqual(119, position);
         }
     }

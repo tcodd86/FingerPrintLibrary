@@ -44,8 +44,9 @@
     <Compile Include="DataPackageUtilities.cs" />
     <Compile Include="SensorCodes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SensorFunctions.cs" />
+    <Compile Include="SensorResponse.cs" />
     <Compile Include="SerialWrapper.cs" />
+    <Compile Include="SimpleSensor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
