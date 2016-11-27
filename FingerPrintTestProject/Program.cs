@@ -45,13 +45,13 @@ namespace FingerPrintTestProject
                 switch (read)
                 {
                     case "Search":
-                        response = sensor.FingerPrintSearch();
-                        Console.WriteLine(response.Success ? "Matched!" : "Failed to match.");
+                        var search = sensor.FingerPrintSearch();
+                        Console.WriteLine(search.Success ? $"Matched! Found on page {search.PageNumber} with match score of {search.MatchLevel}." : $"Failed to match. Error message {response.ErrorMessage}.");
                         Console.ReadLine();
                         break;
                     case "Enroll":
                         response = sensor.EnrollFingerPrint();
-                        Console.WriteLine(response.Success ? "Successfully enrolled fingerprint!" : "Failed to enroll.");
+                        Console.WriteLine(response.Success ? "Successfully enrolled fingerprint!" : $"Failed to enroll. Error message: {response.ErrorMessage}");
                         break;
                     case "Library":
                         ReadLibraryPositions(sensor.fingerprintSensor);

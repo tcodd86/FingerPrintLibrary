@@ -77,12 +77,11 @@ namespace FingerPrintLibrary
             return response;
         }
         
-        private bool ReadFingerprint(out byte confirmationCode)
+        private SensorResponse ReadFingerprint()
         {
-            string message;
+            byte confirmationCode = SensorCodes.OK;
             bool read = false;
             int count = 0;
-            confirmationCode = SensorCodes.OK;
             Thread.Sleep(1000);
 
             while (read == false)
@@ -90,74 +89,80 @@ namespace FingerPrintLibrary
                 read = fingerprintSensor.ReadFingerprint(out confirmationCode);
                 if (!read)
                 {
-                    SensorCodes.ConfirmationCodes.TryGetValue(confirmationCode, out message);
                     Thread.Sleep(100);
                 }
-
                 count++;
                 if (count > 50)
                 {
                     break;
                 }
             }
-
-            return read;
+            return new SensorResponse(confirmationCode);
         }
 
-        public SensorResponse FingerPrintSearch()
+        public SearchResponse FingerPrintSearch()
         {
             byte confirmationCode;
-            var response = ReadFingerprintAndGenerateTemplate();
+            var response = ReadFingerprintGenerateCharacter();
             
             if (response.Success)
             {
                 short matchLevel;
-                var success = fingerprintSensor.PreciseMatchFingerprint(out confirmationCode, out matchLevel);
-                response = new SensorResponse(confirmationCode);
+                short pageNumber;
+                var success = fingerprintSensor.Search(out pageNumber, out confirmationCode, out matchLevel);
+                return new SearchResponse(confirmationCode, pageNumber, matchLevel);
             }
-            return response;
+            else
+            {
+                return new SearchResponse(response);
+            }            
         }
 
         public SensorResponse ReadFingerprintAndGenerateTemplate()
         {
             byte confirmationCode;
 
-            //1. Read fingerprint and store in ImageBuffer
-            var success = ReadFingerprint(out confirmationCode);
-            if (!success)
+            var response = ReadFingerprintGenerateCharacter(0x01);
+            if (!response.Success)
             {
-                return new SensorResponse("Failed to read fingerprint. Failure message: ", confirmationCode);
+                return response;
             }
 
-            //2. Convert into Char file (Img2Tz) and store in Char Buffer 1
-            success = fingerprintSensor.GenerateCharacterFileFromImage(out confirmationCode, 0x01);
-            if (!success)
+            response = ReadFingerprintGenerateCharacter(0x02);
+            if (!response.Success)
             {
-                return new SensorResponse("Failed to generate character file. Failure message: ", confirmationCode);
+                return response;
             }
 
-            //3. Read fingerprint again and store in ImageBuffer
-            success = ReadFingerprint(out confirmationCode);
-            if (!success)
-            {
-                return new SensorResponse("Failed to read fingerprint. Failure message: ", confirmationCode);
-            }
-
-            //4. Convert into Char file and store in Char Buffer 2
-            success = fingerprintSensor.GenerateCharacterFileFromImage(out confirmationCode, 0x02);
-            if (!success)
-            {
-                return new SensorResponse("Failed to generate character file. Failure message: ", confirmationCode);
-            }
-
-            //5. Create template from Char buffer 1 & 2 which is stored in both Char buffers
-            success = fingerprintSensor.GenerateTemplate(out confirmationCode);
+            //Create template from Char buffer 1 & 2 which is stored in both Char buffers
+            var success = fingerprintSensor.GenerateTemplate(out confirmationCode);
             if (!success)
             {
                 return new SensorResponse("Failed to generate template from character buffers. Failure message: ", confirmationCode);
             }
 
-            return new SensorResponse(true);
+            return new SensorResponse(confirmationCode);
+        }
+
+        public SensorResponse ReadFingerprintGenerateCharacter(byte buffer = 0x01)
+        {
+            byte confirmationCode;
+
+            //1. Read fingerprint and store in ImageBuffer
+            var success = ReadFingerprint();
+            if (!success.Success)
+            {
+                return new SensorResponse("Failed to read fingerprint. Failure message: ", success.ResponseCode);
+            }
+
+            //2. Convert into Char file (Img2Tz) and store in Char Buffer
+            var characterSuccess = fingerprintSensor.GenerateCharacterFileFromImage(out confirmationCode, buffer);
+            if (!characterSuccess)
+            {
+                return new SensorResponse("Failed to generate character file. Failure message: ", confirmationCode);
+            }
+
+            return new SensorResponse(confirmationCode);
         }
     }
 }

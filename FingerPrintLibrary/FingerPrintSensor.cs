@@ -141,6 +141,17 @@ namespace FingerPrintLibrary
             return DataPackageUtilities.ParseSuccess(result);
         }
 
+        public bool Search(out short pageNumber, out byte confirmationCode, out short matchingScore, byte bufferID = 0x01)
+        {
+            var search = DataPackageUtilities.Search(bufferID);
+            var result = Wrapper.SendAndReadSerial(search).Result;
+            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
+            var data = DataPackageUtilities.ParsePackageContents(result);
+            pageNumber = DataPackageUtilities.ByteToShort(data.Take(2));
+            matchingScore = DataPackageUtilities.ByteToShort(data.Skip(2));
+            return DataPackageUtilities.ParseSuccess(result);
+        }
+
         #region SystemParameters
         public bool GetStatusRegister(out byte[] statusRegister)
         {

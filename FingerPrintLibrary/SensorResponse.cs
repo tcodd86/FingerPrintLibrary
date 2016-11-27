@@ -75,4 +75,27 @@ namespace FingerPrintLibrary
 
         public bool Success { get; set; }
     }
+
+    public class SearchResponse : SensorResponse
+    {
+        public short PageNumber { get; set; }
+
+        public short MatchLevel { get; set; }
+
+        public SearchResponse(byte confirmationCode, short pageNumber, short matchLevel)
+            : base(confirmationCode)
+        {
+            PageNumber = pageNumber;
+            MatchLevel = matchLevel;
+        }
+
+        public SearchResponse(SensorResponse response)
+        {
+            PageNumber = 0;
+            MatchLevel = 0;
+            ResponseCode = response.ResponseCode;
+            ErrorMessage = response.ErrorMessage;
+            Success = response.Success;
+        }
+    }
 }

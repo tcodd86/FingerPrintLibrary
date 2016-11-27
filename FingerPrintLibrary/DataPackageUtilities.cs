@@ -85,6 +85,17 @@ namespace FingerPrintLibrary
             return AddCheckSum(preciseMatch);
         }
 
+        public static byte[] Search(byte bufferNumber = 0x01)
+        {
+            var search = DataPackageStart();
+            search.AddRange(new byte[] { 0x00, 0x08 });
+            search.Add(SensorCodes.SEARCH);
+            search.Add(bufferNumber);
+            search.AddRange(new byte[] { 0x00, 0x00 });//start page
+            search.AddRange(new byte[] { 0x03, 0xE9 });//"page num" this is what the manufacturers sample program sends through.
+            return AddCheckSum(search);
+        }
+
         public static byte[] ReadSystemParameters()
         {
             var readSysParam = DataPackageStart();

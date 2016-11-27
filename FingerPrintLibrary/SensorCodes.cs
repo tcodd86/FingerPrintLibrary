@@ -51,7 +51,8 @@ namespace FingerPrintLibrary
         public static byte GETIMAGE = 0x01;
         public static byte IMAGE2TZ = 0x02;
         public static byte MATCH = 0x03;
-        public static byte SEARCH = 0x04;
+        //Datasheet has 0x04. Adafruit has 0x1B and serial monitor of application from manufacturer shows 0x1B
+        public static byte SEARCH = 0x1B;
         public static byte REGMODEL = 0x05;
         public static byte STORE = 0x06;
         public static byte LOADCHAR = 0x07;
