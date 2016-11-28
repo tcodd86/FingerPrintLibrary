@@ -247,6 +247,9 @@ namespace FingerPrintLibrary
         {
             var positions = new List<int>();
             byte confirmationCode;
+            short count;
+
+            var succ = ReadValidTemplateNumber(out confirmationCode, out count);
 
             for (short i = 0; i < templateCapacity - 1; i++)
             {
@@ -255,6 +258,11 @@ namespace FingerPrintLibrary
                 if (result)
                 {
                     positions.Add((int)i);
+                }
+
+                if (positions.Count >= count)
+                {
+                    break;
                 }
             }
 
