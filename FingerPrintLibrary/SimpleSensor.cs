@@ -39,6 +39,7 @@ namespace FingerPrintLibrary
         {
             byte confirmationCode;
 
+            var positions = fingerprintSensor.GetUsedLibraryPositions();
             var response = ReadFingerprintAndGenerateTemplate();
 
             if (response.Success)
@@ -46,7 +47,6 @@ namespace FingerPrintLibrary
                 //Store template in next available template position (if position = -1) or specified location
                 if (position == -1)
                 {
-                    var positions = fingerprintSensor.GetUsedLibraryPositions();
                     var success = FingerPrintSensor.DetermineNextAvailablePosition(out position, positions, fingerprintSensor.templateCapacity);
 
                     if (!success)
