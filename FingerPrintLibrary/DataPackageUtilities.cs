@@ -52,13 +52,7 @@ namespace FingerPrintLibrary
             storeTemplate.AddRange(locationNumber);
             return AddCheckSum(storeTemplate);            
         }
-
-
-        /// <summary>
-        /// Really not sure what this command does, don't use for now.
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete]
+                
         public static byte[] ReadValidTemplateNumber()
         {
             var getTemplates = DataPackageStart();
@@ -235,7 +229,9 @@ namespace FingerPrintLibrary
         {
             //First 10 bytes are other info, last 2 are checksum
             ValidateMinimumLength(buffer);
-            return buffer.Skip(10).Take(buffer.Count() - 12).ToArray();
+            var dataLength = ParsePackageLength(buffer);
+            //take dataLength - 3 because 1 is confirmation code and 2 are checksum
+            return buffer.Skip(10).Take(dataLength - 3).ToArray();
         }
         #endregion
 
