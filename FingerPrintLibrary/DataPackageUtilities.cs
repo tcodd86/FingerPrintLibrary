@@ -98,6 +98,20 @@ namespace FingerPrintLibrary
             return AddCheckSum(readSysParam);
         }
 
+        public static byte[] SetAddress(byte[] newAddress)
+        {
+            if (newAddress.Length != 4)
+            {
+                throw new ArgumentException("New address must be 4 bytes.", "newAddress");
+            }
+
+            var setAddress = DataPackageStart();
+            setAddress.AddRange(new byte[] { 0x00, 0x07 });
+            setAddress.Add(SensorCodes.SET_ADDRESS);
+            setAddress.AddRange(newAddress);
+            return AddCheckSum(setAddress);
+        }
+
         /// <summary>
         /// Returns a byte array of data with a 2 byte checksum appended.
         /// </summary>

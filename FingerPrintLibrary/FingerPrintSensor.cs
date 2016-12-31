@@ -64,16 +64,16 @@ namespace FingerPrintLibrary
         { }
         #endregion
         
-        public bool HandShake(out byte confirmationCode)
+        public SensorResponse HandShake()
         {
             var send = DataPackageUtilities.Handshake();
-            return SendPackageParseResults(send, out confirmationCode);
+            return SendPackageParseResults(send);
         }
 
-        public bool ReadLibaryPosition(byte[] position, out byte confirmationCode)
+        public SensorResponse ReadLibaryPosition(byte[] position)
         {
             var send = DataPackageUtilities.ReadTemplateAtLocation(position);
-            return SendPackageParseResults(send, out confirmationCode);
+            return SendPackageParseResults(send);
         }
 
         /// <summary>
@@ -85,35 +85,36 @@ namespace FingerPrintLibrary
         /// <returns>
         /// True if fingerprint is successfully read.
         /// </returns>
-        public bool ReadFingerprint(out byte confirmationCode, int maxAttempts = 100)
+        public SensorResponse ReadFingerprint(int maxAttempts = 100)
         {
             var send = DataPackageUtilities.GenerateImage();
             var success = false;
-            confirmationCode = 0x01;
             byte[] result = new byte[12];
             int attempts = 0;
+            SensorResponse response = new SensorResponse(false, "Failed to read fingerprint");
             while (!success && attempts < maxAttempts)
             {
                 //wait 1/10 of a second between attempts
                 Thread.Sleep(100);
 
-                success = SendPackageParseResults(send, out confirmationCode);
+                response = SendPackageParseResults(send);
+                success = response.Success;
                 attempts++;
             }
                      
-            return success;
+            return response;
         }
 
-        public bool GenerateCharacterFileFromImage(out byte confirmationCode, byte buffer = 0x01)
+        public SensorResponse GenerateCharacterFileFromImage(byte buffer = 0x01)
         {
             var send = DataPackageUtilities.GenerateCharFileFromImgDataPackage(buffer);
-            return SendPackageParseResults(send, out confirmationCode);
+            return SendPackageParseResults(send);
         }
 
-        public bool GenerateTemplate(out byte confirmationCode)
+        public SensorResponse GenerateTemplate()
         {
             var send = DataPackageUtilities.GenerateTemplate();
-            return SendPackageParseResults(send, out confirmationCode);
+            return SendPackageParseResults(send);
         }
 
         public bool ReadValidTemplateNumber(out byte confirmationCode, out Int16 numberOfTemplates)
@@ -125,13 +126,19 @@ namespace FingerPrintLibrary
             return DataPackageUtilities.ParseSuccess(result);
         }
 
-        public bool StoreTemplate(out byte confirmationCode, Int16 positionToStoreTemplate, byte charBufferToUse)
+        public SensorResponse StoreTemplate(Int16 positionToStoreTemplate, byte charBufferToUse)
         {
             var positionAsBytes = DataPackageUtilities.ShortToByte(positionToStoreTemplate);
             var send = DataPackageUtilities.StoreTemplate(charBufferToUse, positionAsBytes);
-            return SendPackageParseResults(send, out confirmationCode);
+            return SendPackageParseResults(send);
         }
 
+        /// <summary>
+        /// Does a precise match of the templates in buffer 1 and 2.
+        /// </summary>
+        /// <param name="confirmationCode">Confirmation code.</param>
+        /// <param name="matchingScore">Matching score.</param>
+        /// <returns></returns>
         public bool PreciseMatchFingerprint(out byte confirmationCode, out short matchingScore)
         {
             var preciseMatching = DataPackageUtilities.MatchFingerPrint();
@@ -141,6 +148,14 @@ namespace FingerPrintLibrary
             return DataPackageUtilities.ParseSuccess(result);
         }
 
+        /// <summary>
+        /// Quick search.
+        /// </summary>
+        /// <param name="pageNumber">Page number match is found on.</param>
+        /// <param name="confirmationCode">Confirmation code.</param>
+        /// <param name="matchingScore">Matching score.</param>
+        /// <param name="bufferID">Buffer to search against. Defaults to buffer 0x01.</param>
+        /// <returns></returns>
         public bool Search(out short pageNumber, out byte confirmationCode, out short matchingScore, byte bufferID = 0x01)
         {
             var search = DataPackageUtilities.Search(bufferID);
@@ -150,6 +165,30 @@ namespace FingerPrintLibrary
             pageNumber = DataPackageUtilities.ByteToShort(data.Take(2));
             matchingScore = DataPackageUtilities.ByteToShort(data.Skip(2));
             return DataPackageUtilities.ParseSuccess(result);
+        }
+
+        /// <summary>
+        /// Sets the address of the module to the provided value.
+        /// </summary>
+        /// <param name="newAddress">The address to set the device to. Must be 4 bytes long. Will be set to current device address when returned.</param>
+        /// <param name="confirmationCode">Confirmation code.</param>
+        /// <returns>Successfully changed address.</returns>
+        /// <exception cref="ArgumentException">If newAddress is not Length = 4.</exception>
+        public bool SetAddress(ref byte[] newAddress, out byte confirmationCode)
+        {
+            var send = DataPackageUtilities.SetAddress(newAddress);
+            var result = Wrapper.SendAndReadSerial(send).Result;
+            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
+            //pull address out of return packet. It will be the current address of the sensor whether it got changed or not.
+            newAddress = result.Skip(2).Take(4).ToArray();
+            if (confirmationCode == SensorCodes.OK)
+            {                
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         #region SystemParameters
@@ -230,11 +269,17 @@ namespace FingerPrintLibrary
         /// <returns>
         /// True if fingerprint sensor returns success. False if failed.
         /// </returns>
-        private bool SendPackageParseResults(byte[] send, out byte confirmationCode)
+        private SensorResponse SendPackageParseResults(byte[] send)
         {
-            var result = Wrapper.SendAndReadSerial(send).Result;
-            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
-            return DataPackageUtilities.ParseSuccess(result);
+            try
+            {
+                var result = Wrapper.SendAndReadSerial(send).Result;
+                return new SensorResponse(DataPackageUtilities.ParsePackageConfirmationCode(result));
+            }
+            catch (Exception ex)
+            {
+                return new SensorResponse(false, ex.Message);
+            }            
         }
 
         /// <summary>
@@ -254,8 +299,8 @@ namespace FingerPrintLibrary
             for (short i = 0; i < templateCapacity - 1; i++)
             {
                 var position = DataPackageUtilities.ShortToByte(i);
-                var result = ReadLibaryPosition(position, out confirmationCode);
-                if (result)
+                var result = ReadLibaryPosition(position);
+                if (result.Success)
                 {
                     positions.Add((int)i);
                 }
