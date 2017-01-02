@@ -92,15 +92,11 @@ namespace FingerPrintLibrary
 
         public SearchResponse FingerPrintSearch()
         {
-            byte confirmationCode;
             var response = ReadFingerprintGenerateCharacter();
             
             if (response.Success)
             {
-                short matchLevel;
-                short pageNumber;
-                var success = fingerprintSensor.Search(out pageNumber, out confirmationCode, out matchLevel);
-                return new SearchResponse(confirmationCode, pageNumber, matchLevel);
+                return fingerprintSensor.Search();                
             }
             else
             {

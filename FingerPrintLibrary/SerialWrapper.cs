@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.IO.Ports;
+using System.Threading;
 
 namespace FingerPrintLibrary
 {
@@ -67,6 +68,7 @@ namespace FingerPrintLibrary
 
         private void ReadFinished(object sender, ReadFinishedEventArgs e)
         {
+            //next try delay here
             TCS.SetResult(e.ReadBuffer);
         }
 
@@ -90,6 +92,12 @@ namespace FingerPrintLibrary
             var buffer = new byte[bufferSize];
 
             //maybe hardcode delay in here to make sure all bytes have been received
+            int temp = Port.BytesToRead;
+            if (temp > 12)
+            {
+                bufferSize = 5000;
+                Thread.Sleep(1000);
+            }
             Port.Read(buffer, 0, Port.BytesToRead);
 
             //Raise OnBufferFinished event

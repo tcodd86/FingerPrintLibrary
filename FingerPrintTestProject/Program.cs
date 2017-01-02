@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 using FingerPrintLibrary;
 using System.Threading;
+using System.IO;
+using System.Drawing;
 
 namespace FingerPrintTestProject
 {
@@ -40,7 +42,7 @@ namespace FingerPrintTestProject
 
             while(!string.Equals(read, "exit", StringComparison.InvariantCultureIgnoreCase))
             {
-                Console.WriteLine("Enter command (Search, Enroll, Library, Exit)");
+                Console.WriteLine("Enter command (Search, Enroll, Library, Image, Exit)");
                 read = Console.ReadLine();
                 switch (read)
                 {
@@ -55,6 +57,11 @@ namespace FingerPrintTestProject
                         break;
                     case "Library":
                         ReadLibraryPositions(sensor.fingerprintSensor);
+                        break;
+                    case "Image":
+                        Console.WriteLine("Enter filename;");
+                        var fileName = Console.ReadLine();
+                        GetImage(sensor.fingerprintSensor, fileName);
                         break;
                     case "Exit":
                         read = "exit";
@@ -75,6 +82,29 @@ namespace FingerPrintTestProject
                 Console.WriteLine(pos);
             }
             Console.ReadLine();
+        }
+
+        public static void GetImage(FingerPrintSensor sensor, string pictureName)
+        {
+            var read = sensor.ReadFingerprint();
+            if (!read.Success)
+            {
+                Console.WriteLine("Failed to read fingerprint.");
+                return;
+            }
+
+            var response = sensor.UploadImageToComputer();
+
+            if (response.Success)
+            {
+                var filePath = @"C:\Users\Public\Pictures\" + (pictureName) + ".bmp";
+                response.Picture.Save(filePath);
+            }
+            else
+            {
+                Console.WriteLine("Failed to load image from sensor.");
+                Console.ReadLine();
+            }
         }
     }
 }

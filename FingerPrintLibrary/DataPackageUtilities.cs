@@ -26,6 +26,14 @@ namespace FingerPrintLibrary
             return AddCheckSum(genImg);
         }
 
+        public static byte[] UploadImageToComputer()
+        {
+            var upImage = DataPackageStart();
+            upImage.AddRange(new byte[] { 0x00, 0x03 });
+            upImage.Add(SensorCodes.UP_IMAGE);
+            return AddCheckSum(upImage);
+        }
+
         public static byte[] GenerateCharFileFromImgDataPackage(byte buffer)
         {
             var genChar = DataPackageStart();
@@ -246,6 +254,12 @@ namespace FingerPrintLibrary
             var dataLength = ParsePackageLength(buffer);
             //take dataLength - 3 because 1 is confirmation code and 2 are checksum
             return buffer.Skip(10).Take(dataLength - 3).ToArray();
+        }
+
+        public static byte[] ParseImage(byte[] buffer)
+        {
+            ValidateMinimumLength(buffer);
+            return buffer.Skip(12).Take(4608).ToArray();
         }
         #endregion
 

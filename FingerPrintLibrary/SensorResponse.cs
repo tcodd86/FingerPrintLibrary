@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -96,6 +97,23 @@ namespace FingerPrintLibrary
             ResponseCode = response.ResponseCode;
             ErrorMessage = response.ErrorMessage;
             Success = response.Success;
+        }
+    }
+
+    public class ImageResponse : SensorResponse
+    {
+        public Bitmap Picture { get; set; }
+
+        public ImageResponse(byte confirmationCode, Bitmap picture)
+            : base(confirmationCode)
+        {
+            Picture = picture;
+        }
+
+        public ImageResponse(byte confirmationCode)
+            : base(confirmationCode)
+        {
+            Picture = null;
         }
     }
 }

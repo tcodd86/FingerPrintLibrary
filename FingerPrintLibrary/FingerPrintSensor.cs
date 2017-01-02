@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Drawing;
+using System.IO;
+using System.Threading.Tasks;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 namespace FingerPrintLibrary
 {
@@ -117,13 +122,19 @@ namespace FingerPrintLibrary
             return SendPackageParseResults(send);
         }
 
-        public bool ReadValidTemplateNumber(out byte confirmationCode, out Int16 numberOfTemplates)
+        /// <summary>
+        /// Finds the number of templates stored in the library.
+        /// </summary>
+        /// <param name="numberOfTemplates">
+        /// Variable to have number of templates stored in it.
+        /// </param>
+        /// <returns></returns>
+        public SensorResponse ReadValidTemplateNumber(out Int16 numberOfTemplates)
         {
             var send = DataPackageUtilities.ReadValidTemplateNumber();
             var result = Wrapper.SendAndReadSerial(send).Result;
-            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
             numberOfTemplates = DataPackageUtilities.ByteToShort(DataPackageUtilities.ParsePackageContents(result));
-            return DataPackageUtilities.ParseSuccess(result);
+            return new SensorResponse(DataPackageUtilities.ParsePackageConfirmationCode(result));
         }
 
         public SensorResponse StoreTemplate(Int16 positionToStoreTemplate, byte charBufferToUse)
@@ -136,59 +147,90 @@ namespace FingerPrintLibrary
         /// <summary>
         /// Does a precise match of the templates in buffer 1 and 2.
         /// </summary>
-        /// <param name="confirmationCode">Confirmation code.</param>
         /// <param name="matchingScore">Matching score.</param>
         /// <returns></returns>
-        public bool PreciseMatchFingerprint(out byte confirmationCode, out short matchingScore)
+        public SensorResponse PreciseMatchFingerprint(out short matchingScore)
         {
             var preciseMatching = DataPackageUtilities.MatchFingerPrint();
             var result = Wrapper.SendAndReadSerial(preciseMatching).Result;
-            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
             matchingScore = DataPackageUtilities.ByteToShort(DataPackageUtilities.ParsePackageContents(result));
-            return DataPackageUtilities.ParseSuccess(result);
+            return new SensorResponse(DataPackageUtilities.ParsePackageConfirmationCode(result));
         }
 
         /// <summary>
         /// Quick search.
         /// </summary>
-        /// <param name="pageNumber">Page number match is found on.</param>
-        /// <param name="confirmationCode">Confirmation code.</param>
-        /// <param name="matchingScore">Matching score.</param>
         /// <param name="bufferID">Buffer to search against. Defaults to buffer 0x01.</param>
         /// <returns></returns>
-        public bool Search(out short pageNumber, out byte confirmationCode, out short matchingScore, byte bufferID = 0x01)
+        public SearchResponse Search(byte bufferID = 0x01)
         {
             var search = DataPackageUtilities.Search(bufferID);
             var result = Wrapper.SendAndReadSerial(search).Result;
-            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
+            byte confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
             var data = DataPackageUtilities.ParsePackageContents(result);
-            pageNumber = DataPackageUtilities.ByteToShort(data.Take(2));
-            matchingScore = DataPackageUtilities.ByteToShort(data.Skip(2));
-            return DataPackageUtilities.ParseSuccess(result);
+            short pageNumber = DataPackageUtilities.ByteToShort(data.Take(2));
+            short matchingScore = DataPackageUtilities.ByteToShort(data.Skip(2));
+            return new SearchResponse(confirmationCode, pageNumber, matchingScore);
         }
 
         /// <summary>
         /// Sets the address of the module to the provided value.
         /// </summary>
         /// <param name="newAddress">The address to set the device to. Must be 4 bytes long. Will be set to current device address when returned.</param>
-        /// <param name="confirmationCode">Confirmation code.</param>
         /// <returns>Successfully changed address.</returns>
         /// <exception cref="ArgumentException">If newAddress is not Length = 4.</exception>
-        public bool SetAddress(ref byte[] newAddress, out byte confirmationCode)
+        public SensorResponse SetAddress(ref byte[] newAddress)
         {
             var send = DataPackageUtilities.SetAddress(newAddress);
             var result = Wrapper.SendAndReadSerial(send).Result;
-            confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
             //pull address out of return packet. It will be the current address of the sensor whether it got changed or not.
             newAddress = result.Skip(2).Take(4).ToArray();
-            if (confirmationCode == SensorCodes.OK)
-            {                
-                return true;
+            return new SensorResponse(DataPackageUtilities.ParsePackageConfirmationCode(result));
+        }
+
+        public  ImageResponse UploadImageToComputer()
+        {
+            var send = DataPackageUtilities.UploadImageToComputer();
+            var result = Wrapper.SendAndReadSerial(send).Result;
+            var confirmationCode = DataPackageUtilities.ParsePackageConfirmationCode(result);
+
+            if (DataPackageUtilities.ParseSuccess(result))
+            {
+                var imageBytes = DataPackageUtilities.ParseImage(result);
+                //var stream = new MemoryStream(imageBytes);
+                //IntPtr pointer = new IntPtr();
+                //return new ImageResponse(confirmationCode, new Bitmap(256, 288, 256, PixelFormat.Format8bppIndexed, pointer));
+                return new ImageResponse(confirmationCode, CopyDataToBitmap(imageBytes));
             }
             else
             {
-                return false;
+                return new ImageResponse(confirmationCode);
             }
+        }
+
+        /// <summary>
+        /// function CopyDataToBitmap
+        /// Purpose: Given the pixel data return a bitmap of size [352,288],PixelFormat=24RGB 
+        /// </summary>
+        /// <param name="data">Byte array with pixel data</param>
+        private Bitmap CopyDataToBitmap(byte[] data)
+        {
+            //Here create the Bitmap to the know height, width and format
+            //Bitmap bmp = new Bitmap(256, 288);
+            Bitmap bmp = new Bitmap(Image.FromStream(new MemoryStream(data)), new Size(256, 288));
+            //Create a BitmapData and Lock all pixels to be written 
+            BitmapData bmpData = bmp.LockBits(
+                                 new Rectangle(0, 0, bmp.Width, bmp.Height),
+                                 ImageLockMode.WriteOnly, bmp.PixelFormat);
+
+            //Copy the data from the byte array into BitmapData.Scan0
+            Marshal.Copy(data, 0, bmpData.Scan0, data.Length);
+
+            //Unlock the pixels
+            bmp.UnlockBits(bmpData);
+
+            //Return the bitmap 
+            return bmp;
         }
 
         #region SystemParameters
@@ -265,7 +307,6 @@ namespace FingerPrintLibrary
         /// Transmits send and parses results.
         /// </summary>
         /// <param name="send">Byte array to send to sensor.</param>
-        /// <param name="confirmationCode">byte that will contain confirmation code.</param>
         /// <returns>
         /// True if fingerprint sensor returns success. False if failed.
         /// </returns>
@@ -291,10 +332,9 @@ namespace FingerPrintLibrary
         public List<int> GetUsedLibraryPositions()
         {
             var positions = new List<int>();
-            byte confirmationCode;
             short count;
 
-            var succ = ReadValidTemplateNumber(out confirmationCode, out count);
+            ReadValidTemplateNumber(out count);
 
             for (short i = 0; i < templateCapacity - 1; i++)
             {
