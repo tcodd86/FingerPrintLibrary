@@ -197,9 +197,6 @@ namespace FingerPrintLibrary
             if (DataPackageUtilities.ParseSuccess(result))
             {
                 var imageBytes = DataPackageUtilities.ParseImage(result);
-                //var stream = new MemoryStream(imageBytes);
-                //IntPtr pointer = new IntPtr();
-                //return new ImageResponse(confirmationCode, new Bitmap(256, 288, 256, PixelFormat.Format8bppIndexed, pointer));
                 return new ImageResponse(confirmationCode, CopyDataToBitmap(imageBytes));
             }
             else
@@ -215,22 +212,7 @@ namespace FingerPrintLibrary
         /// <param name="data">Byte array with pixel data</param>
         private Bitmap CopyDataToBitmap(byte[] data)
         {
-            //Here create the Bitmap to the know height, width and format
-            //Bitmap bmp = new Bitmap(256, 288);
-            Bitmap bmp = new Bitmap(Image.FromStream(new MemoryStream(data)), new Size(256, 288));
-            //Create a BitmapData and Lock all pixels to be written 
-            BitmapData bmpData = bmp.LockBits(
-                                 new Rectangle(0, 0, bmp.Width, bmp.Height),
-                                 ImageLockMode.WriteOnly, bmp.PixelFormat);
-
-            //Copy the data from the byte array into BitmapData.Scan0
-            Marshal.Copy(data, 0, bmpData.Scan0, data.Length);
-
-            //Unlock the pixels
-            bmp.UnlockBits(bmpData);
-
-            //Return the bitmap 
-            return bmp;
+            return ImageGenerator.GenerateBitmap(288, 256, data);            
         }
 
         #region SystemParameters

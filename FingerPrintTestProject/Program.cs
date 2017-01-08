@@ -42,7 +42,7 @@ namespace FingerPrintTestProject
 
             while(!string.Equals(read, "exit", StringComparison.InvariantCultureIgnoreCase))
             {
-                Console.WriteLine("Enter command (Search, Enroll, Library, Image, Exit)");
+                Console.WriteLine("Enter command (Search, Enroll, Library, Exit)");//took out , Image
                 read = Console.ReadLine();
                 switch (read)
                 {
@@ -58,11 +58,11 @@ namespace FingerPrintTestProject
                     case "Library":
                         ReadLibraryPositions(sensor.fingerprintSensor);
                         break;
-                    case "Image":
-                        Console.WriteLine("Enter filename;");
-                        var fileName = Console.ReadLine();
-                        GetImage(sensor.fingerprintSensor, fileName);
-                        break;
+                    //case "Image":
+                    //    Console.WriteLine("Enter filename;");
+                    //    var fileName = Console.ReadLine();
+                    //    GetImage(sensor.fingerprintSensor, fileName);
+                    //    break;
                     case "Exit":
                         read = "exit";
                         break;

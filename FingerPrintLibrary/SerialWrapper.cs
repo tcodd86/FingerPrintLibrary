@@ -89,15 +89,17 @@ namespace FingerPrintLibrary
         {
             //max buffer length is 256. Pad a little.
             int bufferSize = 300;
-            var buffer = new byte[bufferSize];
-
+            
             //maybe hardcode delay in here to make sure all bytes have been received
             int temp = Port.BytesToRead;
-            if (temp > 12)
-            {
-                bufferSize = 5000;
-                Thread.Sleep(1000);
-            }
+            //if (temp > 12)
+            //{
+            //    //Thread.Sleep(1500);              
+            //    Task.Delay(1500);
+            //    bufferSize = 5000;
+            //}
+
+            var buffer = new byte[bufferSize];
             Port.Read(buffer, 0, Port.BytesToRead);
 
             //Raise OnBufferFinished event
