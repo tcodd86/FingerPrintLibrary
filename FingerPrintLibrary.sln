@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FingerPrintLibrary", "FingerPrintLibrary\FingerPrintLibrary.csproj", "{655CD9D3-AE0E-4ACC-B85E-24AF791D2E4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FingerprintLibraryCore", "FingerprintLibraryCore\FingerprintLibraryCore.csproj", "{8D837BE5-BAA4-4E50-9382-A9E4A3BD4FF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FingerprintTest", "FingerprintTest\FingerprintTest.csproj", "{853BAC7E-27D6-4B2F-AE6C-66DB86C307A6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FingerprintTestsCore", "FingerprintTestsCore\FingerprintTestsCore.csproj", "{18BC5974-428E-41E7-933D-26DB26BBD9D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FingerPrintTestProject", "FingerPrintTestProject\FingerPrintTestProject.csproj", "{D5755504-DC09-46C1-9A4D-31A8FD25896D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FingerprintLibraryCore", "FingerprintLibraryCore\FingerprintLibraryCore.csproj", "{8D837BE5-BAA4-4E50-9382-A9E4A3BD4FF1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppCore", "TestAppCore\TestAppCore.csproj", "{246CE085-0F0C-4D80-B765-B81A8711E6E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,24 +15,23 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{655CD9D3-AE0E-4ACC-B85E-24AF791D2E4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{655CD9D3-AE0E-4ACC-B85E-24AF791D2E4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{655CD9D3-AE0E-4ACC-B85E-24AF791D2E4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{655CD9D3-AE0E-4ACC-B85E-24AF791D2E4E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{853BAC7E-27D6-4B2F-AE6C-66DB86C307A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{853BAC7E-27D6-4B2F-AE6C-66DB86C307A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{853BAC7E-27D6-4B2F-AE6C-66DB86C307A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{853BAC7E-27D6-4B2F-AE6C-66DB86C307A6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D5755504-DC09-46C1-9A4D-31A8FD25896D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D5755504-DC09-46C1-9A4D-31A8FD25896D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D5755504-DC09-46C1-9A4D-31A8FD25896D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D5755504-DC09-46C1-9A4D-31A8FD25896D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8D837BE5-BAA4-4E50-9382-A9E4A3BD4FF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8D837BE5-BAA4-4E50-9382-A9E4A3BD4FF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D837BE5-BAA4-4E50-9382-A9E4A3BD4FF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D837BE5-BAA4-4E50-9382-A9E4A3BD4FF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18BC5974-428E-41E7-933D-26DB26BBD9D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18BC5974-428E-41E7-933D-26DB26BBD9D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18BC5974-428E-41E7-933D-26DB26BBD9D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18BC5974-428E-41E7-933D-26DB26BBD9D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{246CE085-0F0C-4D80-B765-B81A8711E6E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{246CE085-0F0C-4D80-B765-B81A8711E6E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{246CE085-0F0C-4D80-B765-B81A8711E6E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{246CE085-0F0C-4D80-B765-B81A8711E6E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A3BAEEDB-6751-41B4-B6B8-63FC6BBA65FF}
 	EndGlobalSection
 EndGlobal

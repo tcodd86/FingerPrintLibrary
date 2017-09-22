@@ -8,7 +8,7 @@ namespace FingerPrintLibrary
     public class SerialWrapper
     {
         private SerialPort Port;
-
+        
         private TaskCompletionSource<byte[]> TCS = new TaskCompletionSource<byte[]>();
 
         public string Address { get; set; }
